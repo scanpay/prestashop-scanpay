@@ -1,0 +1,47 @@
+#scanpay--pingurl--input {
+    cursor: pointer !important;
+}
+
+.scanpay--pingurl--status > div {
+    display: none;
+    position: relative;
+    margin-bottom: 6px;
+    padding: 10px 10px 10px 26px;
+    text-align: left;
+    font-size: 13px;
+    padding-top: 5px;
+}
+.scanpay--pingurl--ok .scanpay--pingurl--ok {
+    display: block;
+    background: #dff0d8;
+    border-left: 5px #3c763d solid;
+}
+.scanpay--pingurl--warning .scanpay--pingurl--warning,
+.scanpay--pingurl--never--pinged .scanpay--pingurl--never--pinged {
+    display: block;
+    background: #fff4cc;
+    border-left: 5px #ffe070 solid;
+}
+.scanpay--pingurl--error .scanpay--pingurl--error {
+    display: block;
+    background: #fad7d4;
+    border-left: 5px #f08a81 solid;
+}
+
+.scanpay--pingurl--status h4:before {
+    display: inline-block;
+    position: absolute;
+    content: '\26a0';
+    left: 3px;
+    width: 18px;
+    height: 18px;
+}
+
+.scanpay--pingurl--status .scanpay--pingurl--ok h4:before {
+    content: '\2713';
+}
+
+.scanpay--pingurl--status h4 {
+    font-size: 15px !important;
+    padding: 0 !important;
+}
