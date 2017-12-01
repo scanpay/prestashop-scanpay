@@ -137,7 +137,7 @@ class Scanpay extends PaymentModule
             foreach($settings as $key => $value) {
                 Configuration::updateValue($key, $value);
             }
-        } 
+        }
 
         if (!$settings['SCANPAY_TITLE']) {
             $settings['SCANPAY_TITLE'] = self::DFLT_TITLE;

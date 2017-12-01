@@ -8,8 +8,8 @@ class ScanpaySuccessModuleFrontController extends ModuleFrontController
 
     public function __construct()
     {
-    	parent::__construct();
-    	unset($this->context->cookie->id_cart);
+        parent::__construct();
+        unset($this->context->cookie->id_cart);
     }
 
     public function postProcess()
@@ -56,6 +56,6 @@ class ScanpaySuccessModuleFrontController extends ModuleFrontController
             'key'        => $key,
         ];
         Tools::redirect(__PS_BASE_URI__ . 'index.php?' . http_build_query($data));
-	}
+    }
 
 }

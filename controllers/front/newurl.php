@@ -60,14 +60,13 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
         ];
 
         /* Add all items from the cart to the order */
-        $currency = new Currency((int)$cart->id_currency);
-
+        $items = [];
         foreach($cart->getProducts() as $product) {
             $linetotal = $cart->getOrderTotal(true, Cart::BOTH_WITHOUT_SHIPPING, [$product]);
-            $data['items'][] = [
+            $items[] = [
                 'name'     => $product['name'],
                 'quantity' => intval($product['cart_quantity']),
-                'total'    => $linetotal . ' ' . $currency->iso_code,
+                'total'    => $linetotal,
                 'sku'      => strval($product['id_product']),
             ];
         }
@@ -75,23 +74,59 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
         /* Add shipping costs if applicable */
         $shipcosts = $cart->getOrderTotal(true, Cart::ONLY_SHIPPING);
         if ($shipcosts > 0) {
-            $data['items'][] = [
+            $items[] = [
                 'name'     => $scanpay->l('Shipping'),
                 'quantity' => 1,
-                'total'    => $shipcosts . ' ' . $currency->iso_code,
+                'total'    => $shipcosts,
             ];
 
         }
         /* Add gift wrap costs if applicable */
         $giftwrapcosts = $cart->getOrderTotal(true, Cart::ONLY_WRAPPING);
         if ($giftwrapcosts > 0) {
-            $data['items'][] = [
+            $items[] = [
                 'name' => $scanpay->l('Gift Wrap'),
                 'quantity' => 1,
-                'total' => $giftwrapcosts . ' ' . $currency->iso_code,
+                'total' => $giftwrapcosts,
             ];
 
         }
+
+
+        /* Calculate grand total and round item totals */
+        $grandtotal = 0;
+        foreach ($items as $i => $item) {
+            $items[$i]['total'] = round($items[$i]['total'], 2);
+            $grandtotal += $items[$i]['total'];
+        }
+
+        /* Better round some more due to devious floats */
+        $grandtotal = round($grandtotal, 2);
+        $ordertotal = (float)$cart->getOrderTotal(true, Cart::BOTH);
+
+        /* If the calculated grand total differs from the order total, compensate
+           by adding / subtracting amounts from items. Also convert to string
+           before comparing since float compare often will not yield the right result. */
+        if ($grandtotal . '' !== $ordertotal . '') {
+            $totdiff = round($ordertotal - $grandtotal, 2);
+
+            foreach ($items as $i => $item) {
+                /* We bound the minimum item total at 0, by bounding
+                   the difference at minus the current item total */
+                $d = max($totdiff, -$items[$i]['total']);
+                $items[$i]['total'] += $d;
+                $totdiff = round($totdiff - $d, 2);
+            }
+        }
+
+        /* Add currencies to item totals */
+        $currency = new Currency((int)$cart->id_currency);
+        foreach ($items as $i => $item) {
+            $items[$i]['total'] .= ' ' . $currency->iso_code;
+        }
+
+        /* Insert the items into the sent data */
+        $data['items'] = $items;
 
         $m = Tools::getValue('paymentmethod');
 
