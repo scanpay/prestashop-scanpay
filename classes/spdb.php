@@ -37,7 +37,7 @@ class SPDB_Seq
             if (!self::mkrow($shopid)) {
                 throw new \Exception('Unable to make row');
             }
-            return load($shopid);
+            return self::load($shopid);
         }
         return $seqobj;
     }
