@@ -12,7 +12,7 @@ class Scanpay {
         $this->headers = [
             'Authorization' => 'Basic ' . base64_encode($apikey),
             'X-SDK' => 'PHP-1.3.1/'. PHP_VERSION,
-            'X-Shop-Plugin: prestashop/0.1',
+            'X-Shop-Plugin: prestashop/0.1.1',
             'Content-Type' => 'application/json',
             'Expect' => '', // Prevent 'Expect: 100-continue' on POSTs >1024b.
         ];
