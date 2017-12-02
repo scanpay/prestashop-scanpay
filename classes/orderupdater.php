@@ -79,7 +79,8 @@ class SPOrderUpdater
                         'transaction_id' => $change['id'],
                     ];
                     $cart = new Cart($cartid);
-                    if (!$scanpay->validateOrder($cartid, _PS_OS_PAYMENT_, (float)$authorized, $title, null, [], null, false, $cart->secure_key)) {
+                    $extra = [ 'transaction_id' => (int)$change['id'] ];
+                    if (!$scanpay->validateOrder($cartid, _PS_OS_PAYMENT_, (float)$authorized, $title, null, $extra, null, false, $cart->secure_key)) {
                         $scanpay->log('failed to validate order (trnid=' . $change['id'] . ')');
                         continue;
                     }

@@ -27,12 +27,16 @@ class ScanpaySuccessModuleFrontController extends ModuleFrontController
         $scanpay = new Scanpay();
         for ($i = 0; $i < 6; $i++) {
             if ($i === 5) {
-                $scanpay->log("Could not find order in system. " .
-                    "Verify that your Scanpay Ping URL is correctly " .
-                    "set in the Scanpay Dashboard.");
+                $scanpay->log('Could not find order in system. ' .
+                    'Verify that your Scanpay Ping URL is correctly ' .
+                    'set in the Scanpay Dashboard.');
                 $shopid = (int)explode(':', Configuration::get('SCANPAY_APIKEY'))[0];
                 $myseq = (int)SPDB_Seq::load($shopid)['seq'];
-                SPOrderUpdater::update($shopid, $myseq, false);
+                try {
+                    SPOrderUpdater::update($shopid, $myseq, false);
+                } catch (\Exception $e) {
+                    $scanpay->log('Order updater exception:' . $e->getMessage());
+                }
             }
             $data = SPDB_Carts::load($cartid);
             if (!$data) {
@@ -44,7 +48,7 @@ class ScanpaySuccessModuleFrontController extends ModuleFrontController
             sleep(1);
         }
         if ($i === 6) {
-            die('Timeout while waiting for payment data');
+            die('Timeout while waiting for payment data. Please contact the shop.');
         }
         /* Reload cart */
         $cart = new Cart((int)$cartid);
