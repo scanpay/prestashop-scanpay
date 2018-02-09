@@ -5,6 +5,8 @@ if (!defined('_PS_VERSION_')) {
   exit();
 }
 
+define('SCANPAY_VERSION', '0.1.2');
+
 require_once(dirname(__FILE__) . '/classes/spdb.php');
 
 class Scanpay extends PaymentModule
@@ -17,7 +19,7 @@ class Scanpay extends PaymentModule
     {
         $this->name = 'scanpay';
         $this->tab = 'payments_gateways';
-        $this->version = '0.1.1';
+        $this->version = SCANPAY_VERSION;
         $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
         $this->author = 'Scanpay ApS';
         $this->need_instance = 0;
