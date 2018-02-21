@@ -68,7 +68,7 @@ class SPOrderUpdater
                 $authorized = self::getcurnum($change['totals']['authorized']);
 
                 /* Get the prestashop orderid from the cartid */
-                $psorderid = method_exists('Order', 'getIdByCartId') ? Order::getIdByCartId($cartid) : getOrderByCartId($cartid);
+                $psorderid = method_exists('Order', 'getIdByCartId') ? Order::getIdByCartId($cartid) : Order::getOrderByCartId($cartid);
 
                 /* Create a new order, if one has not been assigned to the cart yet */
                 if ($psorderid === false) {
