@@ -84,7 +84,7 @@ class SPOrderUpdater
                         $scanpay->log('failed to validate order (trnid=' . $change['id'] . ')');
                         continue;
                     }
-                    $psorderid = Order::getIdByCartId($cartid);
+                    $psorderid = method_exists('Order', 'getIdByCartId') ? Order::getIdByCartId($cartid) : Order::getOrderByCartId($cartid);
                 }
 
                 /* Register order data */
