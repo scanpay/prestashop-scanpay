@@ -120,7 +120,7 @@ class SPDB_Carts
         return true;
     }
 
-    private function getcurnum($str)
+    private static function getcurnum($str)
     {
         $num = explode(' ', $str)[0];
         $parts = explode('.', $num);
