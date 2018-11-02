@@ -40,6 +40,7 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         $myseq = (int)$seqobj['seq'];
         if ((int)$ping['seq'] <= $myseq) {
             SPDB_Seq::updatemtime($shopid);
+            echo json_encode([ 'success' => true ]);
             return;
         }
 

@@ -67,7 +67,7 @@ class Scanpay extends PaymentModule
     }
 
     /* Create array of payment options to be shown in checkout */
-    public function hookPaymentOptions($params) 
+    public function hookPaymentOptions($params)
     {
         if (!$this->active) {
             return;
@@ -90,8 +90,8 @@ class Scanpay extends PaymentModule
     }
 
     /* Handle the order confirmation page (post-payment) */
-    public function hookPaymentReturn($params) 
-    { 
+    public function hookPaymentReturn($params)
+    {
         if (!isset($params['order']) || ($params['order']->module != $this->name)) {
             return false;
         }
@@ -110,7 +110,7 @@ class Scanpay extends PaymentModule
             'reference'   => $order->reference,
             'contact_url' => $this->context->link->getPageLink('contact', true)
         ]);
-        return $this->fetch('module:scanpay/views/templates/hook/payment_return.tpl'); 
+        return $this->fetch('module:scanpay/views/templates/hook/payment_return.tpl');
     }
 
     /* Configuration handling (Settings) */
@@ -270,7 +270,7 @@ class Scanpay extends PaymentModule
         ];
 
         foreach($settings as $key => $value) {
-            $helper->fields_value[$key] = $value; 
+            $helper->fields_value[$key] = $value;
         }
         $helper->fields_value['pingurl'] = $this->context->link->getModuleLink($this->name, 'ping', [], true);
 
