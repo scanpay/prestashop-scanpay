@@ -27,7 +27,11 @@ class SPOrderUpdater
 	static function update($shopid, $myseq, $updatemtime = true)
 	{
         $scanpay = new Scanpay();
-		$cl = new Scanpay\Scanpay(Configuration::get('SCANPAY_APIKEY'));
+		$cl = new Scanpay\Scanpay(Configuration::get('SCANPAY_APIKEY'), [
+            'headers' => [
+                'X-Shop-Plugin' => 'prestashop/' . _PS_VERSION_ . '/' . SCANPAY_VERSION,
+            ],
+        ]);
 		/* Run the synchronization process */
         while (1) {
             /* Perform a Scanpay Seq request */
@@ -40,6 +44,9 @@ class SPOrderUpdater
 
             /* Loop through all the changes */
             foreach ($res['changes'] as $change) {
+                if ($change['type'] !== 'transaction') {
+                    continue;
+                }
                 $orderid = $change['orderid'];
 
                 /* Extract the cartid from the order id */

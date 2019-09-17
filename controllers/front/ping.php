@@ -22,7 +22,11 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         }
 
         $body = Tools::file_get_contents('php://input');
-        $cl = new Scanpay\Scanpay($apikey);
+        $cl = new Scanpay\Scanpay($apikey, [
+            'headers' => [
+                'X-Shop-Plugin' => 'prestashop/' . _PS_VERSION_ . '/' . SCANPAY_VERSION,
+            ],
+        ]);
         try {
             $ping = $cl->handlePing([ 'body' => $body ]);
         } catch (\Exception $e) {
