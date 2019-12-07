@@ -80,11 +80,6 @@ class SPOrderUpdater
                 /* Create a new order, if one has not been assigned to the cart yet */
                 if ($psorderid === false) {
                     $title = 'Scanpay';
-                    $auth = $change['totals']['authorized'];
-                    $amount = floatval(explode(' ', $auth)[0]);
-                    $extra_vars = [
-                        'transaction_id' => $change['id'],
-                    ];
                     $cart = new Cart($cartid);
                     $extra = [ 'transaction_id' => (int)$change['id'] ];
                     if (!$scanpay->validateOrder($cartid, _PS_OS_PAYMENT_, (float)$authorized, $title, null, $extra, null, false, $cart->secure_key)) {
