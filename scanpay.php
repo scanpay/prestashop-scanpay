@@ -70,7 +70,6 @@ class Scanpay extends PaymentModule
         $msg = new Message();
         $msg->id_order = (int)$order->id;
         $msg->id_cart = (int)$order->id_cart;
-        $msg->id_customer = (int)$order->id_customer;
         $msg->message = $msgstr;
         $msg->private = true;
         $msg->add();
@@ -143,6 +142,10 @@ class Scanpay extends PaymentModule
                 $spdata = SPDB_Carts::load($order->id_cart);
                 if (!$spdata) {
                     $this->addOrderMessage($order, 'failed to load scanpay transaction data');
+                    return;
+                }
+                /* Already captured */
+                if ((float)$spdata['captured'] > 0) {
                     return;
                 }
                 $cart = Cart::getCartByOrderId($order->id);
