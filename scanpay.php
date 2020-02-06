@@ -5,7 +5,7 @@ if (!defined('_PS_VERSION_')) {
   exit();
 }
 
-define('SCANPAY_VERSION', '1.1.1');
+define('SCANPAY_VERSION', '1.1.2');
 
 require_once(dirname(__FILE__) . '/classes/spdb.php');
 
