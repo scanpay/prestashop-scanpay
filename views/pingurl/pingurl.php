@@ -51,8 +51,6 @@ $pingclass = 'scanpay--pingurl--' . getPingUrlStatus($lastpingtime);
 $pingdt_desc = fmtDeltaTime(time() - $lastpingtime);
 
 ?>
-</p>
-
 <div class="scanpay--pingurl">
   <div class="scanpay--pingurl--status <?php echo $pingclass ?>">
     <div class="scanpay--pingurl--ok">
@@ -86,4 +84,6 @@ $pingdt_desc = fmtDeltaTime(time() - $lastpingtime);
     </div>
   </div>
 </div>
-<p>
+<div>
+<input type="text" id="scanpay--pingurl--input" value="<?php echo $pingurl?>" readonly>
+</div>

@@ -5,7 +5,7 @@ if (!defined('_PS_VERSION_')) {
   exit();
 }
 
-define('SCANPAY_VERSION', '1.1.0');
+define('SCANPAY_VERSION', '1.1.1');
 
 require_once(dirname(__FILE__) . '/classes/spdb.php');
 
@@ -64,15 +64,6 @@ class Scanpay extends PaymentModule
     {
         Logger::addLog($msg, $severity, 0, $objectType, $objectId);
         error_log('Scanpay module error: ' . $msg);
-    }
-
-    private function addOrderMessage($order, $msgstr) {
-        $msg = new Message();
-        $msg->id_order = (int)$order->id;
-        $msg->id_cart = (int)$order->id_cart;
-        $msg->message = $msgstr;
-        $msg->private = true;
-        $msg->add();
     }
 
     /* Extract the shopid from an apikey */
@@ -135,42 +126,53 @@ class Scanpay extends PaymentModule
     /* Order status change hook */
     public function hookPostUpdateOrderStatus($params)
     {
-        if (Configuration::get('SCANPAY_CAPTURE_ON_COMPLETE')) {
+        $states = Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS');
+        if (!empty($states)) {
             $order = new Order($params['id_order']);
-            if ($params['newOrderStatus']->id === intval(_PS_OS_SHIPPING_) ||
-                $params['newOrderStatus']->id === intval(_PS_OS_DELIVERED_)) {
-                $spdata = SPDB_Carts::load($order->id_cart);
-                if (!$spdata) {
-                    $this->addOrderMessage($order, 'failed to load scanpay transaction data');
-                    return;
+            $states = explode(',', $states);
+            $doCapture = false;
+            foreach ($states as $state) {
+                if ($params['newOrderStatus']->id === intval($state)) {
+                    $doCapture = true;
+                    break;
                 }
-                /* Already captured */
-                if ((float)$spdata['captured'] > 0) {
-                    return;
-                }
-                $cart = Cart::getCartByOrderId($order->id);
-                if (!$cart) {
-                    $this->addOrderMessage($order, 'failed to load cart from order');
-                    return;
-                }
-                $currency = new Currency((int)$cart->id_currency);
-                $capturedata = [
-                    'total' => "{$cart->getOrderTotal(true, Cart::BOTH)} {$currency->iso_code}",
-                    'index' => $spdata['nacts'],
-                ];
-                require_once(dirname(__FILE__) . '/classes/libscanpay.php');
-                $cl = new Scanpay\Scanpay(Configuration::get('SCANPAY_APIKEY'), [
-                    'headers' => [
-                        'X-Shop-Plugin' => 'prestashop/' . _PS_VERSION_ . '/' . SCANPAY_VERSION,
-                    ],
-                ]);
-                try {
-                    $cl->capture($spdata['trnid'], $capturedata);
-                } catch (\Exception $e) {
-                    $this->addOrderMessage($order, 'capture failed: ' . $e->getMessage());
-                    $this->log('capture failed: ' . $e->getMessage());
-                    return;
-                }
+            }
+            if (!$doCapture) {
+                return;
+            }
+            $spdata = SPDB_Carts::load($order->id_cart);
+            if (!$spdata) {
+                $this->context->controller->errors[] = Tools::displayError($this->l('Failed to load scanpay transaction data'));
+                return;
+            }
+            /* Already captured */
+            if ((float)$spdata['captured'] > 0) {
+                $this->context->controller->informations[] = $this->l('Order is already captured');
+                return;
+            }
+            $cart = Cart::getCartByOrderId($order->id);
+            if (!$cart) {
+                $this->context->controller->errors[] = Tools::displayError($this->l('Failed to load cart from order'));
+                return;
+            }
+            $currency = new Currency((int)$cart->id_currency);
+            $capturedata = [
+                'total' => "{$cart->getOrderTotal(true, Cart::BOTH)} {$currency->iso_code}",
+                'index' => $spdata['nacts'],
+            ];
+            require_once(dirname(__FILE__) . '/classes/libscanpay.php');
+            $cl = new Scanpay\Scanpay(Configuration::get('SCANPAY_APIKEY'), [
+                'headers' => [
+                    'X-Shop-Plugin' => 'prestashop/' . _PS_VERSION_ . '/' . SCANPAY_VERSION,
+                ],
+            ]);
+            try {
+                $cl->capture($spdata['trnid'], $capturedata);
+                $this->context->controller->confirmations[] = $this->l('Order was successfully captured');
+            } catch (\Exception $e) {
+                $this->context->controller->errors[] = Tools::displayError($this->l('Order capture failed: ') . $e->getMessage());
+                $this->log('capture failed: ' . $e->getMessage());
+                return;
             }
         }
     }
@@ -180,27 +182,31 @@ class Scanpay extends PaymentModule
     {
         $output = null;
         $settings = [
-            'SCANPAY_TITLE'                   => Configuration::get('SCANPAY_TITLE'),
-            'SCANPAY_APIKEY'                  => Configuration::get('SCANPAY_APIKEY'),
-            'SCANPAY_LANGUAGE'                => Configuration::get('SCANPAY_LANGUAGE'),
-            'SCANPAY_AUTOCAPTURE'             => Configuration::get('SCANPAY_AUTOCAPTURE'),
-            'SCANPAY_CAPTURE_ON_COMPLETE'     => Configuration::get('SCANPAY_CAPTURE_ON_COMPLETE'),
-            'SCANPAY_MOBILEPAY'               => Configuration::get('SCANPAY_MOBILEPAY'),
+            'SCANPAY_TITLE'                     => Configuration::get('SCANPAY_TITLE'),
+            'SCANPAY_APIKEY'                    => Configuration::get('SCANPAY_APIKEY'),
+            'SCANPAY_LANGUAGE'                  => Configuration::get('SCANPAY_LANGUAGE'),
+            'SCANPAY_AUTOCAPTURE'               => Configuration::get('SCANPAY_AUTOCAPTURE'),
+            'SCANPAY_CAPTURE_ON_ORDER_STATUS[]' => empty(Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS')) ?
+                                                   [] : explode(',', Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS')),
+            'SCANPAY_MOBILEPAY'                 => Configuration::get('SCANPAY_MOBILEPAY'),
         ];
-
-
         /* Update configuration if config is submitted */
         if (Tools::isSubmit('submit' . $this->name))
         {
             $settings = [
-                'SCANPAY_TITLE'                   => strval(Tools::getValue('SCANPAY_TITLE')),
-                'SCANPAY_APIKEY'                  => strval(Tools::getValue('SCANPAY_APIKEY')),
-                'SCANPAY_LANGUAGE'                => strval(Tools::getValue('SCANPAY_LANGUAGE')),
-                'SCANPAY_AUTOCAPTURE'             => intval(Tools::getValue('SCANPAY_AUTOCAPTURE')),
-                'SCANPAY_CAPTURE_ON_COMPLETE'     => intval(Tools::getValue('SCANPAY_CAPTURE_ON_COMPLETE')),
-                'SCANPAY_MOBILEPAY'               => intval(Tools::getValue('SCANPAY_MOBILEPAY')),
+                'SCANPAY_TITLE'                     => strval(Tools::getValue('SCANPAY_TITLE')),
+                'SCANPAY_APIKEY'                    => strval(Tools::getValue('SCANPAY_APIKEY')),
+                'SCANPAY_LANGUAGE'                  => strval(Tools::getValue('SCANPAY_LANGUAGE')),
+                'SCANPAY_AUTOCAPTURE'               => intval(Tools::getValue('SCANPAY_AUTOCAPTURE')),
+                'SCANPAY_CAPTURE_ON_ORDER_STATUS[]' => empty(Tools::getValue('SCANPAY_CAPTURE_ON_ORDER_STATUS')) ?
+                                                       [] : Tools::getValue('SCANPAY_CAPTURE_ON_ORDER_STATUS'),
+                'SCANPAY_MOBILEPAY'                 => intval(Tools::getValue('SCANPAY_MOBILEPAY')),
             ];
             foreach($settings as $key => $value) {
+                if (substr($key, -2) === '[]') {
+                    $key = substr($key, 0, -2);
+                    $value = implode(',', $value);
+                }
                 Configuration::updateValue($key, $value);
             }
         }
@@ -228,13 +234,23 @@ class Scanpay extends PaymentModule
         } else {
             $lastpingtime = 0;
         }
+        $pingurl = $this->context->link->getModuleLink($this->name, 'ping', [], true);
         ob_start();
-        include($this->local_path . 'views/pingurl.php');
+        include($this->local_path . 'views/pingurl/pingurl.php');
         $pingUrlContent = ob_get_contents();
         ob_end_clean();
-
-        $this->context->controller->addCSS($this->local_path . 'views/pingurl.css');
-        $this->context->controller->addJS($this->local_path . 'views/pingurl.js');
+        $this->context->controller->addCSS($this->local_path . 'views/pingurl/pingurl.css');
+        $this->context->controller->addJS($this->local_path . 'views/pingurl/pingurl.js');
+        /* Create the capture on order status UI */
+        ob_start();
+        include($this->local_path . 'views/captureonorderstatus/captureonorderstatus.php');
+        $captureOnOrderStatusContent = ob_get_contents();
+        ob_end_clean();
+        $this->context->controller->addCSS($this->local_path . 'views/captureonorderstatus/captureonorderstatus.css');
+        $this->context->controller->addJS($this->local_path . 'views/captureonorderstatus/captureonorderstatus.js');
+        foreach (OrderState::getOrderStates($this->context->language->id) as $status) {
+            $captureOnOrderStatusList[] = ['status' => $status['id_order_state'], 'name' => $status['name']];
+        }
 
         /* Define the configuration form inputs */
         $formdata[0]['form'] = [
@@ -257,12 +273,13 @@ class Scanpay extends PaymentModule
                     'required' => true,
                 ],
                 [
-                    'type'     => 'text',
-                    'label'    => $this->l('Ping URL'),
-                    'name'     => 'pingurl',
-                    'desc'     => $this->l('This is the URL Scanpay can use to notify Magento of changes in transaction status.') . $pingUrlContent,
-                    'id'       => 'scanpay--pingurl--input',
-                    'readonly' => true,
+                    'type'         => 'html',
+                    'label'        => $this->l('Ping URL'),
+                    'name'         => 'pingurl',
+                    'desc'         => $this->l('This is the URL Scanpay can use to notify Magento of changes in transaction status.'),
+                    'id'           => 'scanpay--pingurl--input',
+                    'readonly'     => true,
+                    'html_content' => $pingUrlContent,
                 ],
                 [
                     'type'     => 'select',
@@ -308,23 +325,23 @@ class Scanpay extends PaymentModule
                     ],
                 ],
                 [
-                    'type'     => 'switch',
-                    'label'    => $this->l('Capture on complete'),
-                    'name'     => 'SCANPAY_CAPTURE_ON_COMPLETE',
-                    'desc'     => $this->l('Automatically capture orders when order status changes to shipped or delivered.'),
-                    'is_bool' => true,
-                    'values'  => [
-                        [
-                            'id'    => 'on',
-                            'value' => 1,
-                            'name'  => $this->l('Enabled'),
-                        ],
-                        [
-                            'id'    => 'off',
-                            'value' => 0,
-                            'name'  => $this->l('Disabled'),
-                        ],
+                    'type'  => 'select',
+                    'label' => '',
+                    'name'  => 'SCANPAY_CAPTURE_ON_ORDER_STATUS[]',
+                    'multiple' => true,
+                    'options' => [
+                        'query' => $captureOnOrderStatusList,
+                        'id' => 'status',
+                        'name' => 'name'
                     ],
+                    'class' => 'scanpay--hide'
+                ],
+                [
+                    'type'     => 'html',
+                    'label'    => $this->l('Capture on order status'),
+                    'name'     => 'SCANPAY_CAPTURE_ON_ORDER_STATUS_DUMMY',
+                    'desc'     => $this->l('Automatically capture orders when order status changes to one of the statuses selected above.'),
+                    'html_content' => $captureOnOrderStatusContent,
                 ],
                 [
                     'type'     => 'switch',
@@ -355,8 +372,6 @@ class Scanpay extends PaymentModule
         foreach($settings as $key => $value) {
             $helper->fields_value[$key] = $value;
         }
-        $helper->fields_value['pingurl'] = $this->context->link->getModuleLink($this->name, 'ping', [], true);
-
         return $helper->generateForm($formdata);
 
     }

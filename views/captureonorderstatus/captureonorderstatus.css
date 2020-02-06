@@ -1,0 +1,101 @@
+.scanpay--captureonorderstatus {
+    display: flex;
+    align-items: center;
+}
+.scanpay--hide {
+    display: none !important;
+}
+#scanpay--captureonorderstatus--add {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px solid #279cbb;
+    border-radius: 50%;
+    padding: 0;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    width: 34px;
+    height: 34px;
+    background-color: #2eacce;
+    font-size: 20px;
+    font-weight: 200;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+}
+#scanpay--captureonorderstatus--list {
+    display: inline-flex;
+    flex-wrap: wrap;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    user-select: none;
+}
+#scanpay--captureonorderstatus--list > li {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    padding: 5px 0;
+    padding-left: 10px;
+    border: 1px solid #279cbb;
+    border-radius: 3px;
+    background-color: #2eacce;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 400;
+}
+#scanpay--captureonorderstatus--list > li span {
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 20px;
+    line-height: 12px;
+}
+#scanpay--captureonorderstatus--list > li span:hover {
+    background-color: #80cee2;
+}
+#scanpay--captureonorderstatus--dropdown {
+    display: flex;
+    flex-direction: column;
+    list-style-type: none;
+    visibility: hidden;
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    color: black;
+    z-index: 999;
+    padding: 1px 1px 0 1px;
+    width: 300px;
+    background: #999;
+    cursor: auto;
+}
+#scanpay--captureonorderstatus--dropdown.scanpay--show {
+    visibility: visible;
+}
+#scanpay--captureonorderstatus--dropdown li {
+    background: white;
+    border-bottom: black;
+    margin-bottom: 1px;
+    padding: 8px;
+}
+#scanpay--captureonorderstatus--dropdown li.scanpay--usedstatus {
+    background-color: #ccc;
+}
+#scanpay--captureonorderstatus--dropdown li.scanpay--usedstatus::after {
+    content: '\2713';
+    padding-left: 5px;
+}
+#scanpay--captureonorderstatus--dropdown li:hover {
+    background-color: #2eacce;
+    cursor: pointer;
+}
+#scanpay--captureonorderstatus--dropdown li.scanpay--usedstatus:hover {
+    cursor: auto;
+    background-color: #ccc;
+}

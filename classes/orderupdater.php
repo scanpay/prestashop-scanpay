@@ -24,15 +24,15 @@ class SPOrderUpdater
         return $num;
     }
 
-	static function update($shopid, $myseq, $updatemtime = true)
-	{
+    static function update($shopid, $myseq, $updatemtime = true)
+    {
         $scanpay = new Scanpay();
-		$cl = new Scanpay\Scanpay(Configuration::get('SCANPAY_APIKEY'), [
+        $cl = new Scanpay\Scanpay(Configuration::get('SCANPAY_APIKEY'), [
             'headers' => [
                 'X-Shop-Plugin' => 'prestashop/' . _PS_VERSION_ . '/' . SCANPAY_VERSION,
             ],
         ]);
-		/* Run the synchronization process */
+        /* Run the synchronization process */
         while (1) {
             /* Perform a Scanpay Seq request */
             $res = $cl->seq($myseq);
@@ -101,5 +101,5 @@ class SPOrderUpdater
                 return;
             }
         }
-	}
+    }
 }
