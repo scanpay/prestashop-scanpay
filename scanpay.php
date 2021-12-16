@@ -5,7 +5,7 @@ if (!defined('_PS_VERSION_')) {
   exit();
 }
 
-define('SCANPAY_VERSION', '1.1.2');
+define('SCANPAY_VERSION', '1.1.3');
 
 require_once(dirname(__FILE__) . '/classes/spdb.php');
 
@@ -150,14 +150,9 @@ class Scanpay extends PaymentModule
                 $this->context->controller->informations[] = $this->l('Order is already captured');
                 return;
             }
-            $cart = Cart::getCartByOrderId($order->id);
-            if (!$cart) {
-                $this->context->controller->errors[] = Tools::displayError($this->l('Failed to load cart from order'));
-                return;
-            }
-            $currency = new Currency((int)$cart->id_currency);
+            $currency = new Currency((int)$order->id_currency);
             $capturedata = [
-                'total' => "{$cart->getOrderTotal(true, Cart::BOTH)} {$currency->iso_code}",
+                'total' => "{$order->total_paid} {$currency->iso_code}",
                 'index' => $spdata['nacts'],
             ];
             require_once(dirname(__FILE__) . '/classes/libscanpay.php');
