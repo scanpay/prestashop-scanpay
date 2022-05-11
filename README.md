@@ -1,5 +1,5 @@
 # Scanpay for PrestaShop
-We have developed an official payment module for [PrestaShop](https://www.prestashop.com/) version 1.7 and higher. The module allows you to accept payments in your PrestaShop store via our [API](https://docs.scanpay.dk/). We support and maintain the module, but we encourage you to help us improve the module. Feedback, bug reports and code contributions are much appreciated.
+We have developed an official payment module for [PrestaShop](https://www.prestashop.com/) version 1.7 and higher. The module allows you to accept payments in your PrestaShop store via our [API](https://docs.scanpay.dk/). We support and maintain the module, but we hope you will help us improve it. Feedback, bug reports and code contributions are much appreciated.
 
 You can always e-mail us at [help@scanpay.dk](mailto:help@scanpay.dk) or chat with us on IRC at libera.chat #scanpay ([webchat](https://web.libera.chat/#scanpay)).
 
