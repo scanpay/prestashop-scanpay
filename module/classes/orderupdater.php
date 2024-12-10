@@ -1,30 +1,30 @@
 <?php
 
-require_once(dirname(__FILE__) . '/libscanpay.php');
-require_once(dirname(__FILE__) . '/spdb.php');
+require_once dirname(__FILE__) . '/libscanpay.php';
+require_once dirname(__FILE__) . '/spdb.php';
 
 class SPOrderUpdater
 {
-
     private static function getcurnum($str)
     {
         $num = explode(' ', $str)[0];
         $parts = explode('.', $num);
         $n = count($parts);
         if ($n !== 1 && $n !== 2) {
-            throw new \Exception('invalid money value received from Scanpay ' . $str);
+            throw new Exception('invalid money value received from Scanpay ' . $str);
         }
         foreach ($parts as $p) {
-            for ($i = 0; $i < strlen($p); $i++) {
+            for ($i = 0; $i < strlen($p); ++$i) {
                 if ($p[$i] < '0' || $p[$i] > '9') {
-                    throw new \Exception('invalid money value received from Scanpay ' . $str);
+                    throw new Exception('invalid money value received from Scanpay ' . $str);
                 }
             }
         }
+
         return $num;
     }
 
-    static function update($shopid, $myseq, $updatemtime = true)
+    public static function update($shopid, $myseq, $updatemtime = true)
     {
         $scanpay = new Scanpay();
         $cl = new Scanpay\Scanpay(Configuration::get('SCANPAY_APIKEY'), [
@@ -56,7 +56,7 @@ class SPOrderUpdater
                         $orderid . ' (trnid=' . $change['id'] . ')');
                     continue;
                 }
-                $cartid = (int)$arr[1];
+                $cartid = (int) $arr[1];
 
                 /* Load the cart entry created upon payment link generation */
                 $row = SPDB_Carts::load($cartid);
@@ -64,11 +64,11 @@ class SPOrderUpdater
                     $scanpay->log("no matching cart #$cartid (trnid=$change[id])");
                     continue;
                 }
-                if ((int)$row['shopid'] !== $shopid) {
+                if ((int) $row['shopid'] !== $shopid) {
                     $scanpay->log("seq shopid does not match stored shopid for cart #$cartid (trnid=$change[id])");
                     continue;
                 }
-                if ((int)$row['rev'] >= (int)$change['rev']) {
+                if ((int) $row['rev'] >= (int) $change['rev']) {
                     continue;
                 }
 
@@ -81,8 +81,8 @@ class SPOrderUpdater
                 if ($psorderid === false) {
                     $title = 'Scanpay';
                     $cart = new Cart($cartid);
-                    $extra = ['transaction_id' => (int)$change['id']];
-                    if (!$scanpay->validateOrder($cartid, _PS_OS_PAYMENT_, (float)$authorized, $title, null, $extra, null, false, $cart->secure_key)) {
+                    $extra = ['transaction_id' => (int) $change['id']];
+                    if (!$scanpay->validateOrder($cartid, _PS_OS_PAYMENT_, (float) $authorized, $title, null, $extra, null, false, $cart->secure_key)) {
                         $scanpay->log('failed to validate order (trnid=' . $change['id'] . ')');
                         continue;
                     }
@@ -93,7 +93,7 @@ class SPOrderUpdater
                 SPDB_Carts::update($cartid, $shopid, $change);
             }
 
-            $myseq = (int)$res['seq'];
+            $myseq = (int) $res['seq'];
 
             /* Save the new seq */
             $updated = SPDB_Seq::save($shopid, $myseq, $updatemtime);

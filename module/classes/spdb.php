@@ -4,7 +4,7 @@ class SPDB_Seq
 {
     const TABLE = _DB_PREFIX_ . 'scanpay_seq';
 
-    static function mktable()
+    public static function mktable()
     {
         return Db::getInstance()->execute(
             'CREATE TABLE IF NOT EXISTS ' . self::TABLE . ' (
@@ -17,7 +17,8 @@ class SPDB_Seq
 
     private static function mkrow($shopid)
     {
-        $shopid = (int)$shopid;
+        $shopid = (int) $shopid;
+
         return Db::getInstance()->execute(
             'INSERT INTO ' . self::TABLE . "
             (`shopid`, `seq`)
@@ -25,10 +26,11 @@ class SPDB_Seq
             ON DUPLICATE KEY UPDATE `mtime`=`mtime`"
         );
     }
+
     /* Seq */
-    static function load($shopid)
+    public static function load($shopid)
     {
-        $shopid = (int)$shopid;
+        $shopid = (int) $shopid;
         /* Load the current seq for the shop */
         $seqobj = Db::getInstance()->getRow(
             'SELECT * FROM ' . self::TABLE . "
@@ -36,18 +38,20 @@ class SPDB_Seq
         );
         if (!$seqobj) {
             if (!self::mkrow($shopid)) {
-                throw new \Exception('Unable to make row');
+                throw new Exception('Unable to make row');
             }
+
             return self::load($shopid);
         }
+
         return $seqobj;
     }
 
-    static function save($shopid, $seq, $updatemtime = true)
+    public static function save($shopid, $seq, $updatemtime = true)
     {
-        $shopid = (int)$shopid;
-        $seq = (int)$seq;
-        $now = (int)time();
+        $shopid = (int) $shopid;
+        $seq = (int) $seq;
+        $now = (int) time();
         if (!$updatemtime) {
             return Db::getInstance()->execute(
                 'UPDATE ' . self::TABLE . "
@@ -56,6 +60,7 @@ class SPDB_Seq
                 WHERE `shopid` = $shopid AND `seq` < $seq"
             );
         }
+
         return Db::getInstance()->execute(
             'UPDATE ' . self::TABLE . "
             SET
@@ -65,9 +70,9 @@ class SPDB_Seq
         );
     }
 
-    static function updatemtime($shopid)
+    public static function updatemtime($shopid)
     {
-        $shopid = (int)$shopid;
+        $shopid = (int) $shopid;
         $now = time();
         Db::getInstance()->execute(
             'UPDATE ' . self::TABLE . "
@@ -81,7 +86,7 @@ class SPDB_Carts
 {
     const TABLE = _DB_PREFIX_ . 'scanpay_carts';
 
-    static function mktable()
+    public static function mktable()
     {
         return Db::getInstance()->execute(
             'CREATE TABLE IF NOT EXISTS ' . self::TABLE . ' (
@@ -99,10 +104,10 @@ class SPDB_Carts
         );
     }
 
-    static function insert($cartid, $shopid)
+    public static function insert($cartid, $shopid)
     {
-        $shopid = (int)$shopid;
-        $cartid = (int)$cartid;
+        $shopid = (int) $shopid;
+        $cartid = (int) $cartid;
         $inserted = Db::getInstance()->execute(
             'INSERT IGNORE INTO ' . self::TABLE .
                 "(`cartid`, `shopid`)
@@ -113,10 +118,11 @@ class SPDB_Carts
                 'SELECT * FROM ' . self::TABLE . "
                 WHERE `cartid` = $cartid"
             );
-            if ((float)$row['authorized'] > 0) {
+            if ((float) $row['authorized'] > 0) {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -126,19 +132,20 @@ class SPDB_Carts
         $parts = explode('.', $num);
         $n = count($parts);
         if ($n !== 1 && $n !== 2) {
-            throw new \Exception('invalid money value received from Scanpay ' . $str);
+            throw new Exception('invalid money value received from Scanpay ' . $str);
         }
         foreach ($parts as $p) {
-            for ($i = 0; $i < strlen($p); $i++) {
+            for ($i = 0; $i < strlen($p); ++$i) {
                 if ($p[$i] < '0' || $p[$i] > '9') {
-                    throw new \Exception('invalid money value received from Scanpay ' . $str);
+                    throw new Exception('invalid money value received from Scanpay ' . $str);
                 }
             }
         }
+
         return $num;
     }
 
-    static function load($cartid)
+    public static function load($cartid)
     {
         return Db::getInstance()->getRow(
             'SELECT * FROM ' . self::TABLE . "
@@ -146,14 +153,14 @@ class SPDB_Carts
         );
     }
 
-    static function update($cartid, $shopid, $change)
+    public static function update($cartid, $shopid, $change)
     {
-        $cartid = (int)$cartid;
-        $shopid = (int)$shopid;
-        $trnid = (int)$change['id'];
-        $orderid = (int)$change['orderid'];
-        $rev   = (int)$change['rev'];
-        $nacts = (int)count($change['acts']);
+        $cartid = (int) $cartid;
+        $shopid = (int) $shopid;
+        $trnid = (int) $change['id'];
+        $orderid = (int) $change['orderid'];
+        $rev = (int) $change['rev'];
+        $nacts = (int) count($change['acts']);
         $authorized = self::getcurnum($change['totals']['authorized']);
         $captured = self::getcurnum($change['totals']['captured']);
         $refunded = self::getcurnum($change['totals']['refunded']);

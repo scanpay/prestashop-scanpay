@@ -2,7 +2,9 @@
 
 namespace Scanpay;
 
-class IdempotentResponseException extends \Exception {}
+class IdempotentResponseException extends \Exception
+{
+}
 
 class Scanpay
 {
@@ -17,7 +19,7 @@ class Scanpay
     {
         // Check if libcurl is enabled
         if (!function_exists('curl_init')) {
-            die("ERROR: Please enable php-curl\n");
+            exit("ERROR: Please enable php-curl\n");
         }
 
         // Public cURL handle (reuse handle)
@@ -47,6 +49,7 @@ class Scanpay
         if (isset($ret['idempotency-key'])) {
             $this->useidem = true;
         }
+
         return $ret;
     }
 
@@ -56,6 +59,7 @@ class Scanpay
         if (count($arr) === 2 && strtolower(trim($arr[0])) === 'idempotency-status') {
             $this->idemstatus = strtoupper(trim($arr[1]));
         }
+
         return strlen($hdr);
     }
 
@@ -131,6 +135,7 @@ class Scanpay
         if (!is_array($resobj = @json_decode($result, true))) {
             throw new IdempotentResponseException('Invalid JSON response from server');
         }
+
         return $resobj;
     }
 
@@ -167,7 +172,7 @@ class Scanpay
 
         if (isset($opts['signature'])) {
             $signature = $opts['signature'];
-        } else if (isset($_SERVER['HTTP_X_SIGNATURE'])) {
+        } elseif (isset($_SERVER['HTTP_X_SIGNATURE'])) {
             $signature = $_SERVER['HTTP_X_SIGNATURE'];
         } else {
             throw new \Exception('missing ping signature');
@@ -190,8 +195,8 @@ class Scanpay
         }
 
         if (
-            isset($obj['seq']) && is_int($obj['seq']) &&
-            isset($obj['shopid']) && is_int($obj['shopid'])
+            isset($obj['seq']) && is_int($obj['seq'])
+            && isset($obj['shopid']) && is_int($obj['shopid'])
         ) {
             return $obj;
         }
