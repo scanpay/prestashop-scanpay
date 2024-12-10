@@ -1,8 +1,9 @@
 {
-  "private": true,
-  "require-dev": {
-    "prestashop/php-dev-tools": "^5.0",
-    "friendsofphp/php-cs-fixer": "^3.65",
-    "prestashop/autoindex": "^2.1"
-  }
+    "private": true,
+    "require-dev": {
+        "prestashop/php-dev-tools": "*",
+        "friendsofphp/php-cs-fixer": "*"
+    },
+    "author": "Scanpay ApS",
+    "license": "MIT"
 }
