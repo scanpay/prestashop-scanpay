@@ -4,6 +4,11 @@ This document outlines the requirements and dependencies necessary for the succe
 
 Features marked with ~~strikethrough~~ are managed using polyfills or other mitigations.
 
+## PrestaShop compatibility table
+
+| PrestaShop | Version |
+| :--------- | :-----: |
+
 ## PHP compatibility table
 
 PrestaShop 8 requires PHP 7.2.5, while PrestaShop 9.0 requires PHP 8.1.
@@ -19,11 +24,6 @@ PrestaShop 8 requires PHP 7.2.5, while PrestaShop 9.0 requires PHP 8.1.
 | hash_hmac                   |  5.1.2  |
 | Exception class             |  5.1.0  |
 | Default function parameters |  5.0.0  |
-
-## PrestaShop compatibility table
-
-| PrestaShop | Version |
-| :--------- | :-----: |
 
 ## libcurl compatibility table
 
