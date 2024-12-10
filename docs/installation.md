@@ -1,5 +1,3 @@
-# Installation guide
-
 ## Install module
 
 1. Download the latest _prestashop-scanpay_ zip file [here](https://github.com/scanpay/prestashop-scanpay/releases).
