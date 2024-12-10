@@ -1,9 +1,11 @@
 <?php
+
 namespace Scanpay;
 
 class IdempotentResponseException extends \Exception {}
 
-class Scanpay {
+class Scanpay
+{
     protected $ch;
     protected $headers;
     protected $apikey;
@@ -11,7 +13,8 @@ class Scanpay {
     protected $useidem;
     protected $opts;
 
-    public function __construct($apikey = '', $opts=[]) {
+    public function __construct($apikey = '', $opts = [])
+    {
         // Check if libcurl is enabled
         if (!function_exists('curl_init')) {
             die("ERROR: Please enable php-curl\n");
@@ -21,7 +24,7 @@ class Scanpay {
         $this->ch = curl_init();
         $this->headers = [
             'authorization' => 'Authorization: Basic ' . base64_encode($apikey),
-            'x-sdk' => 'X-SDK: PHP-1.5.3/'. PHP_VERSION,
+            'x-sdk' => 'X-SDK: PHP-1.5.3/' . PHP_VERSION,
             'content-type' => 'Content-Type: application/json',
             'expect' => 'Expect: ',
         ];
@@ -33,10 +36,11 @@ class Scanpay {
 
     /* Create indexed array from associative array ($this->headers).
         Let the merchant overwrite the headers. */
-    protected function httpHeaders($oldHeaders, $o=[]) {
+    protected function httpHeaders($oldHeaders, $o = [])
+    {
         $ret = $oldHeaders; /* copy array literal */
         if (isset($o['headers'])) {
-            foreach($o['headers'] as $key => &$val) {
+            foreach ($o['headers'] as $key => &$val) {
                 $ret[strtolower($key)] = $key . ': ' . $val;
             }
         }
@@ -46,7 +50,8 @@ class Scanpay {
         return $ret;
     }
 
-    protected function handleHeaders($curl, $hdr) {
+    protected function handleHeaders($curl, $hdr)
+    {
         $arr = explode(':', $hdr, 2);
         if (count($arr) === 2 && strtolower(trim($arr[0])) === 'idempotency-status') {
             $this->idemstatus = strtoupper(trim($arr[1]));
@@ -54,7 +59,8 @@ class Scanpay {
         return strlen($hdr);
     }
 
-    protected function request($path, $opts=[], $data=null) {
+    protected function request($path, $opts = [], $data = null)
+    {
         /* Merge headers */
         $headers = $this->httpHeaders($this->headers, $this->opts);
         $headers = array_values($this->httpHeaders($headers, $opts));
@@ -85,7 +91,7 @@ class Scanpay {
         }
         // Let the merchant override $curlopts.
         if (isset($opts['curl'])) {
-            foreach($opts['curl'] as $key => &$val) {
+            foreach ($opts['curl'] as $key => &$val) {
                 $curlopts[$key] = $val;
             }
         }
@@ -102,17 +108,17 @@ class Scanpay {
         if ($this->useidem) {
             $err = null;
             switch ($this->idemstatus) {
-            case 'OK':
-                break;
-            case 'ERROR':
-                $err = 'Server failed to provide idempotency';
-                break;
-            case null:
-                $err = 'Idempotency status response header missing';
-                break;
-            default:
-                $err = 'Server returned unknown idempotency status ' . $this->idemstatus;
-                break;
+                case 'OK':
+                    break;
+                case 'ERROR':
+                    $err = 'Server failed to provide idempotency';
+                    break;
+                case null:
+                    $err = 'Idempotency status response header missing';
+                    break;
+                default:
+                    $err = 'Server returned unknown idempotency status ' . $this->idemstatus;
+                    break;
             }
             if (!is_null($err)) {
                 throw new \Exception($err . ". Scanpay returned $statusCode - " . explode("\n", $result)[0]);
@@ -129,7 +135,8 @@ class Scanpay {
     }
 
     // newURL: Create a new payment link
-    public function newURL($data, $opts=[]) {
+    public function newURL($data, $opts = [])
+    {
         $o = $this->request('/v1/new', $opts, $data);
         if (isset($o['url']) && filter_var($o['url'], FILTER_VALIDATE_URL)) {
             return $o['url'];
@@ -138,20 +145,24 @@ class Scanpay {
     }
 
     // seq: Get array of changes since the reqested seqnum
-    public function seq($seqnum, $opts=[]) {
+    public function seq($seqnum, $opts = [])
+    {
         if (!is_numeric($seqnum)) {
             throw new \Exception('seq argument must be an integer');
         }
         $o = $this->request('/v1/seq/' . $seqnum, $opts);
-        if (isset($o['seq']) && is_int($o['seq'])
-                && isset($o['changes']) && is_array($o['changes'])) {
+        if (
+            isset($o['seq']) && is_int($o['seq'])
+            && isset($o['changes']) && is_array($o['changes'])
+        ) {
             return $o;
         }
         throw new \Exception('Invalid response from server');
     }
 
     // handlePing: Convert data to JSON and validate integrity
-    public function handlePing($opts=[]) {
+    public function handlePing($opts = [])
+    {
         ignore_user_abort(true);
 
         if (isset($opts['signature'])) {
@@ -178,14 +189,17 @@ class Scanpay {
             throw new \Exception('invalid json from Scanpay server');
         }
 
-        if (isset($obj['seq']) && is_int($obj['seq']) &&
-            isset($obj['shopid']) && is_int($obj['shopid'])) {
+        if (
+            isset($obj['seq']) && is_int($obj['seq']) &&
+            isset($obj['shopid']) && is_int($obj['shopid'])
+        ) {
             return $obj;
         }
         throw new \Exception('missing fields in Scanpay response');
     }
 
-    public function capture($trnid, $data, $opts=[]) {
+    public function capture($trnid, $data, $opts = [])
+    {
         return $this->request("/v1/transactions/$trnid/capture", $opts, $data);
     }
 
@@ -194,23 +208,24 @@ class Scanpay {
         return rtrim(base64_encode(random_bytes(32)), '=');
     }
 
-    public function charge($subid, $data, $opts=[]) {
+    public function charge($subid, $data, $opts = [])
+    {
         $o = $this->request("/v1/subscribers/$subid/charge", $opts, $data);
-        if (isset($o['type']) && $o['type'] === 'charge' && isset($o['id']) && is_int($o['id'])
-            && isset($o['totals']) && isset($o['totals']['authorized'])) {
+        if (
+            isset($o['type']) && $o['type'] === 'charge' && isset($o['id']) && is_int($o['id'])
+            && isset($o['totals']) && isset($o['totals']['authorized'])
+        ) {
             return $o;
         }
         throw new \Exception('Invalid response from server');
     }
 
-    public function renew($subid, $data, $opts=[]) {
+    public function renew($subid, $data, $opts = [])
+    {
         $o = $this->request("/v1/subscribers/$subid/renew", $opts, $data);
         if (isset($o['url']) && filter_var($o['url'], FILTER_VALIDATE_URL)) {
             return $o['url'];
         }
         throw new \Exception('Invalid response from server');
     }
-
 }
-
-?>

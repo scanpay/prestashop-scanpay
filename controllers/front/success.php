@@ -61,5 +61,4 @@ class ScanpaySuccessModuleFrontController extends ModuleFrontController
         ];
         Tools::redirect(__PS_BASE_URI__ . 'index.php?' . http_build_query($data));
     }
-
 }

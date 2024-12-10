@@ -32,7 +32,8 @@ class SPDB_Seq
         /* Load the current seq for the shop */
         $seqobj = Db::getInstance()->getRow(
             'SELECT * FROM ' . self::TABLE . "
-            WHERE `shopid` = $shopid");
+            WHERE `shopid` = $shopid"
+        );
         if (!$seqobj) {
             if (!self::mkrow($shopid)) {
                 throw new \Exception('Unable to make row');
@@ -74,7 +75,6 @@ class SPDB_Seq
             WHERE `shopid` = $shopid"
         );
     }
-
 }
 
 class SPDB_Carts
@@ -95,7 +95,7 @@ class SPDB_Carts
             `captured`   decimal(20,6) NOT NULL DEFAULT "0.00",
             `refunded`   decimal(20,6) NOT NULL DEFAULT "0.00",
             `voided`     decimal(20,6) NOT NULL DEFAULT "0.00"
-            ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;'
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;'
         );
     }
 
@@ -104,13 +104,13 @@ class SPDB_Carts
         $shopid = (int)$shopid;
         $cartid = (int)$cartid;
         $inserted = Db::getInstance()->execute(
-            'INSERT IGNORE INTO '. self::TABLE .
-            "(`cartid`, `shopid`)
+            'INSERT IGNORE INTO ' . self::TABLE .
+                "(`cartid`, `shopid`)
             VALUES ($cartid, $shopid)"
         );
         if (!$inserted) {
             $row = Db::getInstance()->getRow(
-                'SELECT * FROM '. self::TABLE . "
+                'SELECT * FROM ' . self::TABLE . "
                 WHERE `cartid` = $cartid"
             );
             if ((float)$row['authorized'] > 0) {
@@ -158,7 +158,8 @@ class SPDB_Carts
         $captured = self::getcurnum($change['totals']['captured']);
         $refunded = self::getcurnum($change['totals']['refunded']);
         $voided = '0.00'; /* self::getcurnum($change['totals']['voided']); */
-        Db::getInstance()->execute('UPDATE ' . self::TABLE . "
+        Db::getInstance()->execute(
+            'UPDATE ' . self::TABLE . "
             SET
             `trnid`      = $trnid,
             `orderid`    = $orderid,
@@ -171,7 +172,4 @@ class SPDB_Carts
             WHERE `cartid` = $cartid AND `shopid` = $shopid AND `rev` < $rev AND `nacts` <= $nacts"
         );
     }
-
 }
-
-?>

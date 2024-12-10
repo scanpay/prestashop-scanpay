@@ -42,7 +42,7 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
                 'name'    => $bill->firstname . ' ' . $bill->lastname,
                 'email'   => $this->context->customer->email,
                 'phone'   => preg_replace('/\s+/', '', $bill->phone),
-                'address' => array_filter([ $bill->address1, $bill->address2 ]),
+                'address' => array_filter([$bill->address1, $bill->address2]),
                 'city'    => $bill->city,
                 'zip'     => $bill->postcode,
                 'country' => strtolower((new Country($bill->id_country))->iso_code),
@@ -54,7 +54,7 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
             'shipping'    => array_filter([
                 'name'    => $ship->firstname . ' ' . $ship->lastname,
                 'phone'   => preg_replace('/\s+/', '', $ship->phone),
-                'address' => array_filter([ $ship->address1, $ship->address2 ]),
+                'address' => array_filter([$ship->address1, $ship->address2]),
                 'city'    => $ship->city,
                 'zip'     => $ship->postcode,
                 'country' => strtolower((new Country($ship->id_country))->iso_code),
@@ -65,7 +65,7 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
 
         /* Add all items from the cart to the order */
         $items = [];
-        foreach($cart->getProducts() as $product) {
+        foreach ($cart->getProducts() as $product) {
             $linetotal = $cart->getOrderTotal(true, Cart::BOTH_WITHOUT_SHIPPING, [$product]);
             $items[] = [
                 'name'     => $product['name'],
@@ -83,7 +83,6 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
                 'quantity' => 1,
                 'total'    => $shipcosts,
             ];
-
         }
         /* Add gift wrap costs if applicable */
         $giftwrapcosts = $cart->getOrderTotal(true, Cart::ONLY_WRAPPING);
@@ -93,7 +92,6 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
                 'quantity' => 1,
                 'total' => $giftwrapcosts,
             ];
-
         }
 
 
@@ -153,4 +151,3 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
         Tools::redirect($paymenturl . $q);
     }
 }
-

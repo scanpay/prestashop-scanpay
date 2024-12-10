@@ -5,7 +5,8 @@ require_once(dirname(__FILE__) . '/../../classes/orderupdater.php');
 
 class ScanpayPingModuleFrontController extends ModuleFrontController
 {
-    public function __construct($res = array()) {
+    public function __construct($res = array())
+    {
         parent::__construct($res);
         $this->ajax = true;
     }
@@ -17,7 +18,7 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         $shopid = $scanpay->extractshopid($apikey);
         if (!$shopid) {
             $scanpay->log('invalid Scanpay API-key scheme');
-            echo json_encode([ 'error' => 'invalid Scanpay API-key scheme' ]);
+            echo json_encode(['error' => 'invalid Scanpay API-key scheme']);
             return;
         }
 
@@ -28,14 +29,14 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
             ],
         ]);
         try {
-            $ping = $cl->handlePing([ 'body' => $body ]);
+            $ping = $cl->handlePing(['body' => $body]);
         } catch (\Exception $e) {
             $scanpay->log('invalid ping: ' . $e->getMessage());
-            echo json_encode([ 'error' => $e->getMessage() ]);
+            echo json_encode(['error' => $e->getMessage()]);
             return;
         }
         if ($ping['shopid'] !== $shopid) {
-            echo json_encode([ 'error' => 'invalid ping shopid' ]);
+            echo json_encode(['error' => 'invalid ping shopid']);
             return;
         }
 
@@ -44,7 +45,7 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         $myseq = (int)$seqobj['seq'];
         if ((int)$ping['seq'] <= $myseq) {
             SPDB_Seq::updatemtime($shopid);
-            echo json_encode([ 'success' => true ]);
+            echo json_encode(['success' => true]);
             return;
         }
 
@@ -52,9 +53,9 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
             SPOrderUpdater::update($shopid, $myseq);
         } catch (\Exception $e) {
             $scanpay->log('Encountered erro while updating: ' . $e);
-            echo json_encode([ 'ërror' => 'failed to update orders' ]);
+            echo json_encode(['ërror' => 'failed to update orders']);
             return;
         }
-        echo json_encode([ 'success' => true ]);
+        echo json_encode(['success' => true]);
     }
 }

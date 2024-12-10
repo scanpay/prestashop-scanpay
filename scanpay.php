@@ -1,8 +1,9 @@
 <?php
+
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 
 if (!defined('_PS_VERSION_')) {
-  exit();
+    exit();
 }
 
 define('SCANPAY_VERSION', '1.1.3');
@@ -39,7 +40,9 @@ class Scanpay extends PaymentModule
         if (!SPDB_Carts::mktable()) {
             return false;
         }
-        if (Shop::isFeatureActive()) { Shop::setContext(Shop::CONTEXT_ALL); }
+        if (Shop::isFeatureActive()) {
+            Shop::setContext(Shop::CONTEXT_ALL);
+        }
         return parent::install() &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('paymentOptions') &&
@@ -56,9 +59,18 @@ class Scanpay extends PaymentModule
     }
 
     /* Unused hooks */
-    public function hookAdminOrder() { return; }
-    public function hookPDFInvoice() { return; }
-    public function hookDisplayExpressCheckout() { return; }
+    public function hookAdminOrder()
+    {
+        return;
+    }
+    public function hookPDFInvoice()
+    {
+        return;
+    }
+    public function hookDisplayExpressCheckout()
+    {
+        return;
+    }
 
     public function log($msg, $severity = 0, $objectType = null, $objectId = null)
     {
@@ -182,22 +194,21 @@ class Scanpay extends PaymentModule
             'SCANPAY_LANGUAGE'                  => Configuration::get('SCANPAY_LANGUAGE'),
             'SCANPAY_AUTOCAPTURE'               => Configuration::get('SCANPAY_AUTOCAPTURE'),
             'SCANPAY_CAPTURE_ON_ORDER_STATUS[]' => empty(Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS')) ?
-                                                   [] : explode(',', Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS')),
+                [] : explode(',', Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS')),
             'SCANPAY_MOBILEPAY'                 => Configuration::get('SCANPAY_MOBILEPAY'),
         ];
         /* Update configuration if config is submitted */
-        if (Tools::isSubmit('submit' . $this->name))
-        {
+        if (Tools::isSubmit('submit' . $this->name)) {
             $settings = [
                 'SCANPAY_TITLE'                     => strval(Tools::getValue('SCANPAY_TITLE')),
                 'SCANPAY_APIKEY'                    => strval(Tools::getValue('SCANPAY_APIKEY')),
                 'SCANPAY_LANGUAGE'                  => strval(Tools::getValue('SCANPAY_LANGUAGE')),
                 'SCANPAY_AUTOCAPTURE'               => intval(Tools::getValue('SCANPAY_AUTOCAPTURE')),
                 'SCANPAY_CAPTURE_ON_ORDER_STATUS[]' => empty(Tools::getValue('SCANPAY_CAPTURE_ON_ORDER_STATUS')) ?
-                                                       [] : Tools::getValue('SCANPAY_CAPTURE_ON_ORDER_STATUS'),
+                    [] : Tools::getValue('SCANPAY_CAPTURE_ON_ORDER_STATUS'),
                 'SCANPAY_MOBILEPAY'                 => intval(Tools::getValue('SCANPAY_MOBILEPAY')),
             ];
-            foreach($settings as $key => $value) {
+            foreach ($settings as $key => $value) {
                 if (substr($key, -2) === '[]') {
                     $key = substr($key, 0, -2);
                     $value = implode(',', $value);
@@ -218,7 +229,7 @@ class Scanpay extends PaymentModule
         $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG', 0);
 
         $helper->identifier = $this->identifier;
-        $helper->submit_action = 'submit'.$this->name;
+        $helper->submit_action = 'submit' . $this->name;
         $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
 
@@ -364,11 +375,9 @@ class Scanpay extends PaymentModule
             ],
         ];
 
-        foreach($settings as $key => $value) {
+        foreach ($settings as $key => $value) {
             $helper->fields_value[$key] = $value;
         }
         return $helper->generateForm($formdata);
-
     }
-
 }
