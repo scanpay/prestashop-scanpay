@@ -1,1 +1,4 @@
 /.vscode
+/vendor
+/composer.lock
+/.php-cs-fixer.*
