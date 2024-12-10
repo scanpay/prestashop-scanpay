@@ -1,9 +1,14 @@
+/**
+ * @author    Scanpay ApS <support@scanpay.dk>
+ * @license   https://opensource.org/licenses/MIT MIT License
+*/
+
 $(document).ready(function () {
-    $(document).bind('click', function() {
+    $(document).bind('click', function () {
         $('#scanpay--captureonorderstatus--dropdown').removeClass('scanpay--show');
     });
 
-    $('#scanpay--captureonorderstatus--add').bind('click', function(e) {
+    $('#scanpay--captureonorderstatus--add').bind('click', function (e) {
         $('#scanpay--captureonorderstatus--dropdown').toggleClass('scanpay--show');
         e.stopPropagation();
     });
@@ -23,10 +28,10 @@ $(document).ready(function () {
         addBtn.classList.add('scanpay--usedstatus');
     }
 
-    $('#SCANPAY_CAPTURE_ON_ORDER_STATUS\\[\\] option').each(function(_i, opt) {
+    $('#SCANPAY_CAPTURE_ON_ORDER_STATUS\\[\\] option').each(function (_i, opt) {
         var li = document.createElement('li');
         li.textContent = opt.textContent
-        li.addEventListener('click', function() {
+        li.addEventListener('click', function () {
             if (li.classList.contains('scanpay--usedstatus')) { return; }
             $('#SCANPAY_CAPTURE_ON_ORDER_STATUS\\[\\] option[value="' + opt.value + '"]').attr('selected', '');
             mkStatus(opt.value, opt.textContent, li);

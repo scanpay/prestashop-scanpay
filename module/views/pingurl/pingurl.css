@@ -1,3 +1,8 @@
+/**
+ * @author    Scanpay ApS <support@scanpay.dk>
+ * @license   https://opensource.org/licenses/MIT MIT License
+*/
+
 #scanpay--pingurl--input {
     cursor: pointer !important;
 }
@@ -11,17 +16,20 @@
     font-size: 13px;
     padding-top: 5px;
 }
+
 .scanpay--pingurl--ok .scanpay--pingurl--ok {
     display: block;
     background: #dff0d8;
     border-left: 5px #3c763d solid;
 }
+
 .scanpay--pingurl--warning .scanpay--pingurl--warning,
 .scanpay--pingurl--never--pinged .scanpay--pingurl--never--pinged {
     display: block;
     background: #fff4cc;
     border-left: 5px #ffe070 solid;
 }
+
 .scanpay--pingurl--error .scanpay--pingurl--error {
     display: block;
     background: #fad7d4;
