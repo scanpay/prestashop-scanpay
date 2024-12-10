@@ -1,4 +1,12 @@
 <?php
+/**
+ * @author    Scanpay <contact@scanpay.dk>
+ * @copyright Scanpay ApS. All rights reserved.
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 require_once dirname(__FILE__) . '/../../classes/spdb.php';
 require_once dirname(__FILE__) . '/../../classes/orderupdater.php';

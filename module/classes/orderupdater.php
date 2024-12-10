@@ -1,4 +1,12 @@
 <?php
+/**
+ * @author    Scanpay <contact@scanpay.dk>
+ * @copyright Scanpay ApS. All rights reserved.
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 require_once dirname(__FILE__) . '/libscanpay.php';
 require_once dirname(__FILE__) . '/spdb.php';
@@ -29,7 +37,7 @@ class SPOrderUpdater
         $scanpay = new Scanpay();
         $cl = new Scanpay\Scanpay(Configuration::get('SCANPAY_APIKEY'), [
             'headers' => [
-                'X-Shop-Plugin' => 'prestashop/' . _PS_VERSION_ . '/' . SCANPAY_VERSION,
+                'X-Shop-Plugin' => 'prestashop/' . _PS_VERSION_ . '/{{ VERSION }}',
             ],
         ]);
         /* Run the synchronization process */

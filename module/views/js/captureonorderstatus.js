@@ -1,7 +1,8 @@
 /**
- * @author    Scanpay ApS <support@scanpay.dk>
+ * @author    Scanpay <contact@scanpay.dk>
+ * @copyright Scanpay ApS. All rights reserved.
  * @license   https://opensource.org/licenses/MIT MIT License
-*/
+ */
 
 $(document).ready(function () {
     $(document).bind('click', function () {

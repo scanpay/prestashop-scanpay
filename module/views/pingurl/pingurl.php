@@ -1,4 +1,13 @@
 <?php
+/**
+ * @author    Scanpay <contact@scanpay.dk>
+ * @copyright Scanpay ApS. All rights reserved.
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 if (!function_exists('fmtDeltaTime')) {
     function fmtDeltaTime($dt)
     {

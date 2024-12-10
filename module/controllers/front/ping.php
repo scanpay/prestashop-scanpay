@@ -1,4 +1,12 @@
 <?php
+/**
+ * @author    Scanpay <contact@scanpay.dk>
+ * @copyright Scanpay ApS. All rights reserved.
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 require_once dirname(__FILE__) . '/../../classes/libscanpay.php';
 require_once dirname(__FILE__) . '/../../classes/spdb.php';
@@ -27,7 +35,7 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         $body = Tools::file_get_contents('php://input');
         $cl = new Scanpay\Scanpay($apikey, [
             'headers' => [
-                'X-Shop-Plugin' => 'prestashop/' . _PS_VERSION_ . '/' . SCANPAY_VERSION,
+                'X-Shop-Plugin' => 'prestashop/' . _PS_VERSION_ . '/{{ VERSION }}',
             ],
         ]);
         try {

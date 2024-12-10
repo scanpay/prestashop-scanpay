@@ -1,12 +1,15 @@
 <?php
+/**
+ * @author    Scanpay <contact@scanpay.dk>
+ * @copyright Scanpay ApS. All rights reserved.
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
 
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-
-define('SCANPAY_VERSION', '1.1.3');
 
 require_once dirname(__FILE__) . '/classes/spdb.php';
 
@@ -21,7 +24,7 @@ class Scanpay extends PaymentModule
     {
         $this->name = 'scanpay';
         $this->tab = 'payments_gateways';
-        $this->version = SCANPAY_VERSION;
+        $this->version = '{{ VERSION }}';
         $this->ps_versions_compliancy = ['min' => '1.7', 'max' => _PS_VERSION_];
         $this->author = 'Scanpay ApS';
         $this->need_instance = 0;
@@ -178,7 +181,7 @@ class Scanpay extends PaymentModule
             require_once dirname(__FILE__) . '/classes/libscanpay.php';
             $cl = new Scanpay\Scanpay(Configuration::get('SCANPAY_APIKEY'), [
                 'headers' => [
-                    'X-Shop-Plugin' => 'prestashop/' . _PS_VERSION_ . '/' . SCANPAY_VERSION,
+                    'X-Shop-Plugin' => 'prestashop/' . _PS_VERSION_ . '/{{ VERSION }}',
                 ],
             ]);
             try {

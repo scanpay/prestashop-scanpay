@@ -1,6 +1,15 @@
 <?php
+/**
+ * @author    Scanpay <contact@scanpay.dk>
+ * @copyright Scanpay ApS. All rights reserved.
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
 
 namespace Scanpay;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 class IdempotentResponseException extends \Exception
 {
