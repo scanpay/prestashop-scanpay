@@ -246,15 +246,15 @@ class Scanpay extends PaymentModule
         include($this->local_path . 'views/pingurl/pingurl.php');
         $pingUrlContent = ob_get_contents();
         ob_end_clean();
-        $this->context->controller->addCSS($this->local_path . 'views/pingurl/pingurl.css');
-        $this->context->controller->addJS($this->local_path . 'views/pingurl/pingurl.js');
+        $this->context->controller->addCSS($this->local_path . 'views/css/pingurl.css');
+        $this->context->controller->addJS($this->local_path . 'views/js/pingurl.js');
         /* Create the capture on order status UI */
         ob_start();
         include($this->local_path . 'views/captureonorderstatus/captureonorderstatus.php');
         $captureOnOrderStatusContent = ob_get_contents();
         ob_end_clean();
-        $this->context->controller->addCSS($this->local_path . 'views/captureonorderstatus/captureonorderstatus.css');
-        $this->context->controller->addJS($this->local_path . 'views/captureonorderstatus/captureonorderstatus.js');
+        $this->context->controller->addCSS($this->local_path . 'views/css/captureonorderstatus.css');
+        $this->context->controller->addJS($this->local_path . 'views/js/captureonorderstatus.js');
         foreach (OrderState::getOrderStates($this->context->language->id) as $status) {
             $captureOnOrderStatusList[] = ['status' => $status['id_order_state'], 'name' => $status['name']];
         }
