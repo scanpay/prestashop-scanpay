@@ -3,7 +3,7 @@
 [![Latest Release](https://img.shields.io/github/v/release/scanpay/prestashop-scanpay?cacheSeconds=600)](https://github.com/scanpay/prestashop-scanpay/releases)
 [![License](https://img.shields.io/github/license/scanpay/prestashop-scanpay?cacheSeconds=60000)](./LICENSE)
 
-We have developed an official payment module for [PrestaShop](https://www.prestashop.com/) version 1.7 and higher. The module allows you to accept payments in your PrestaShop store. We support and maintain the module, but we hope you will help us improve it. Feedback, bug reports and code contributions are much appreciated.
+We have developed an official payment module for [PrestaShop](https://www.prestashop.com/). The module allows you to accept payments in your PrestaShop store. We support and maintain the module, but we hope you will help us improve it. Feedback, bug reports and code contributions are much appreciated.
 
 If you have any questions, concerns or ideas, please do not hesitate to e-mail us at [support@scanpay.dk](mailto:support@scanpay.dk). Feel free to join our IRC server `irc.scanpay.dev:6697 #support` or chat with us at [irc.scanpay.dev](https://irc.scanpay.dev).
 
