@@ -14,7 +14,8 @@ class Scanpay extends PaymentModule
 {
     protected $_html = '';
     protected $_postErrors = array();
-    const DFLT_TITLE = 'Credit/Debit Card';
+
+    public $is_eu_compatible;
 
     public function __construct()
     {
@@ -98,7 +99,7 @@ class Scanpay extends PaymentModule
         $base = new PaymentOption();
         $title = Configuration::get('SCANPAY_TITLE');
         if (!$title) {
-            $title = self::DFLT_TITLE;
+            $title = 'Credit/Debit Card';
         }
         $payopts[] = (new PaymentOption)->setCallToActionText($title)
             ->setAction($this->context->link->getModuleLink($this->name, 'newurl', [], true));
@@ -218,7 +219,7 @@ class Scanpay extends PaymentModule
         }
 
         if (!$settings['SCANPAY_TITLE']) {
-            $settings['SCANPAY_TITLE'] = self::DFLT_TITLE;
+            $settings['SCANPAY_TITLE'] = 'Credit/Debit Card';
         }
 
         /* Setup the configuration form */
