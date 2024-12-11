@@ -49,9 +49,9 @@ class Scanpay extends PaymentModule
         }
 
         return parent::install()
-            && $this->registerHook('paymentReturn')
+            && $this->registerHook('displayPaymentReturn')
             && $this->registerHook('paymentOptions')
-            && $this->registerHook('postUpdateOrderStatus');
+            && $this->registerHook('actionOrderStatusPostUpdate');
     }
 
     public function uninstall()
@@ -122,7 +122,7 @@ class Scanpay extends PaymentModule
     }
 
     /* Handle the order confirmation page (post-payment) */
-    public function hookPaymentReturn($params)
+    public function hookDisplayPaymentReturn($params)
     {
         if (!isset($params['order']) || ($params['order']->module != $this->name)) {
             return false;
@@ -147,7 +147,7 @@ class Scanpay extends PaymentModule
     }
 
     /* Order status change hook */
-    public function hookPostUpdateOrderStatus($params)
+    public function hookActionOrderStatusPostUpdate($params)
     {
         $states = Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS');
         if (!empty($states)) {
