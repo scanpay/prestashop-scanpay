@@ -41,3 +41,13 @@ done
 cd "$TMP"
 cd ..
 zip -r "$DIR/prestashop-scanpay-$VERSION.zip" scanpay
+
+# Create a zip file for the test environment
+for file in $(find "$TMP" -type f -name "*.php"); do
+    mtime=$(stat -c %y "$file")
+    sed -i 's/dashboard\.scanpay\.dk/dashboard\.scanpay\.dev/' "$file"
+    sed -i 's/api\.scanpay\.dk/api\.scanpay\.dev/g' "$file"
+    touch -d "$mtime" "$file"
+done
+
+zip -r "$DIR/test-$VERSION.zip" scanpay
