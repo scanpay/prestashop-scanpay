@@ -276,18 +276,64 @@ class Scanpay extends PaymentModule
         }
         $pingurl = $this->context->link->getModuleLink($this->name, 'ping', [], true);
 
-        ob_start();
-        include $this->local_path . 'views/pingurl/pingurl.php';
-        $pingUrlContent = ob_get_contents();
-        ob_end_clean();
+        function fmtDeltaTime($dt)
+        {
+            $minute = 60;
+            $hour = $minute * 60;
+            $day = $hour * 24;
+            if ($dt <= 1) {
+                return '1 second ago';
+            } elseif ($dt < $minute) {
+                return (string) $dt . ' seconds ago';
+            } elseif ($dt < $minute + 30) {
+                return '1 minute ago';
+            } elseif ($dt < $hour) {
+                return (string) round((float) $dt / $minute) . ' minutes ago';
+            } elseif ($dt < $hour + 30 * $minute) {
+                return '1 hour ago';
+            } elseif ($dt < $day) {
+                return (string) round((float) $dt / $hour) . ' hours ago';
+            } elseif ($dt < $day + 12 * $hour) {
+                return '1 day ago';
+            } else {
+                return (string) round((float) $dt / $day) . ' days ago';
+            }
+        }
+
+        function getPingUrlStatus($mtime)
+        {
+            $t = time();
+            if ($mtime > $t) {
+                error_log('last modified time is in the future');
+
+                return;
+            }
+            if ($t < $mtime + 900) {
+                return 'ok';
+            } elseif ($t < $mtime + 3600) {
+                return 'warning';
+            } elseif ($mtime > 0) {
+                return 'error';
+            } else {
+                return 'never--pinged';
+            }
+        }
+
+        $pingclass = 'scanpay--pingurl--' . getPingUrlStatus($lastpingtime);
+        $pingdt_desc = fmtDeltaTime(time() - $lastpingtime);
+
+        // Assign variables to the Smarty context
+        $this->context->smarty->assign([
+            'pingclass' => $pingclass,
+            'pingdt_desc' => $pingdt_desc,
+            'pingurl' => $pingurl,
+        ]);
+        $pingUrlContent = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/pingurl.tpl');
+
         $this->context->controller->addCSS($this->local_path . 'views/css/settings.css');
         $this->context->controller->addJS($this->local_path . 'views/js/settings.js');
+        $captureOnOrderStatusContent = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/captureonorderstatus.tpl');
 
-        /* Create the capture on order status UI */
-        ob_start();
-        include $this->local_path . 'views/captureonorderstatus/captureonorderstatus.php';
-        $captureOnOrderStatusContent = ob_get_contents();
-        ob_end_clean();
         foreach (OrderState::getOrderStates($this->context->language->id) as $status) {
             $captureOnOrderStatusList[] = ['status' => $status['id_order_state'], 'name' => $status['name']];
         }
