@@ -51,32 +51,12 @@ class Scanpay extends PaymentModule
         return parent::install()
             && $this->registerHook('paymentReturn')
             && $this->registerHook('paymentOptions')
-            && $this->registerHook('postUpdateOrderStatus')
-            /* Unused hooks */
-            && $this->registerHook('adminOrder')
-            && $this->registerHook('PDFInvoice')
-            && $this->registerHook('displayExpressCheckout');
+            && $this->registerHook('postUpdateOrderStatus');
     }
 
     public function uninstall()
     {
         return parent::uninstall();
-    }
-
-    /* Unused hooks */
-    public function hookAdminOrder()
-    {
-        return;
-    }
-
-    public function hookPDFInvoice()
-    {
-        return;
-    }
-
-    public function hookDisplayExpressCheckout()
-    {
-        return;
     }
 
     /**
