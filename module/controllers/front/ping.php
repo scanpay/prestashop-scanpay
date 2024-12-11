@@ -65,8 +65,8 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         try {
             SPOrderUpdater::update($shopid, $myseq);
         } catch (Exception $e) {
-            $scanpay->log('Encountered erro while updating: ' . $e);
-            echo json_encode(['ërror' => 'failed to update orders']);
+            $scanpay->log('Encountered error while updating: ' . $e);
+            echo json_encode(['error' => 'failed to update orders']);
 
             return;
         }
