@@ -6,8 +6,9 @@ Features marked with ~~strikethrough~~ are managed using polyfills or other miti
 
 ## PrestaShop compatibility table
 
-| PrestaShop | Version |
-| :--------- | :-----: |
+| PrestaShop               | Version |
+| :----------------------- | :-----: |
+| PrestaShopLogger::addLog |  1.6.0  |
 
 ## PHP compatibility table
 

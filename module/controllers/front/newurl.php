@@ -18,7 +18,7 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
         $scanpay = new Scanpay();
         $cart = $this->context->cart;
         if (!Validate::isLoadedObject($cart)) {
-            $scanpay->log('Invalid cart', 1, 'Cart', $cart->id);
+            $scanpay->debug('Invalid cart: ' . $cart->id);
             exit($scanpay->l('Invalid cart'));
         }
 
