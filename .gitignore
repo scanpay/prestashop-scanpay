@@ -1,6 +1,8 @@
+/node_modules/
 /.vscode
 /vendor
 /composer.lock
 /.php-cs-fixer.*
 /build
 /*.zip
+/pnpm-lock.yaml
