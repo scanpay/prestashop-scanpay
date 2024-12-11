@@ -42,4 +42,9 @@ $(document).ready(function () {
             mkStatus(opt.value, opt.textContent, li);
         }
     });
+
+    $('#scanpay--pingurl--input').click(function () {
+        this.focus();
+        this.select();
+    });
 });
