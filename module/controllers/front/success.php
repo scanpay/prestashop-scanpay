@@ -34,15 +34,13 @@ class ScanpaySuccessModuleFrontController extends ModuleFrontController
         $scanpay = new Scanpay();
         for ($i = 0; $i < 6; ++$i) {
             if ($i === 5) {
-                $scanpay->log('Could not find order in system. ' .
-                    'Verify that your Scanpay Ping URL is correctly ' .
-                    'set in the Scanpay Dashboard.');
+                $scanpay->log('Could not find order in system. Verify that your Scanpay Ping URL is correctly set in the Scanpay Dashboard.');
                 $shopid = (int) explode(':', Configuration::get('SCANPAY_APIKEY'))[0];
                 $myseq = (int) SPDB_Seq::load($shopid)['seq'];
                 try {
                     SPOrderUpdater::update($shopid, $myseq, false);
                 } catch (Exception $e) {
-                    $scanpay->log('Order updater exception:' . $e->getMessage());
+                    $scanpay->log('Order updater exception: ' . $e->getMessage());
                 }
             }
             $data = SPDB_Carts::load($cartid);

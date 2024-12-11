@@ -60,8 +60,7 @@ class SPOrderUpdater
                 /* Extract the cartid from the order id */
                 $arr = explode('_', $orderid);
                 if (count($arr) !== 2 || $arr[0] !== 'cart' || !filter_var($arr[1], FILTER_VALIDATE_INT)) {
-                    $scanpay->log('Could not parse cart id from scanpay order ' .
-                        $orderid . ' (trnid=' . $change['id'] . ')');
+                    $scanpay->log("Could not parse cart id from scanpay order $orderid (trnid=" . $change['id'] . ')');
                     continue;
                 }
                 $cartid = (int) $arr[1];
@@ -69,11 +68,11 @@ class SPOrderUpdater
                 /* Load the cart entry created upon payment link generation */
                 $row = SPDB_Carts::load($cartid);
                 if (!$row) {
-                    $scanpay->log("no matching cart #$cartid (trnid=$change[id])");
+                    $scanpay->log("no matching cart #$cartid (trnid=" . $change['id'] . ')');
                     continue;
                 }
                 if ((int) $row['shopid'] !== $shopid) {
-                    $scanpay->log("seq shopid does not match stored shopid for cart #$cartid (trnid=$change[id])");
+                    $scanpay->log("seq shopid does not match stored shopid for cart #$cartid (trnid=" . $change['id'] . ')');
                     continue;
                 }
                 if ((int) $row['rev'] >= (int) $change['rev']) {
