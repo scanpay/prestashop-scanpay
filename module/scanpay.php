@@ -104,12 +104,9 @@ class Scanpay extends PaymentModule
         if (!$this->active) {
             return;
         }
+
         $payopts = [];
-        $base = new PaymentOption();
-        $title = Configuration::get('SCANPAY_TITLE');
-        if (!$title) {
-            $title = 'Credit/Debit Card';
-        }
+        $title = Configuration::get('SCANPAY_TITLE') ?: 'Credit/Debit Card';
         $payopts[] = (new PaymentOption())->setCallToActionText($title)
             ->setAction($this->context->link->getModuleLink($this->name, 'newurl', [], true));
 
