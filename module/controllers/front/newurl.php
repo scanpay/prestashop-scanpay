@@ -18,7 +18,7 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
         $scanpay = new Scanpay();
         $cart = $this->context->cart;
         if (!Validate::isLoadedObject($cart)) {
-            $scanpay->debug('Invalid cart: ' . $cart->id);
+            PrestaShopLogger::addLog('Invalid cart: ' . $cart->id, 1);
             exit($scanpay->l('Invalid cart'));
         }
 

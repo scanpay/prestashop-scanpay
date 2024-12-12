@@ -73,20 +73,6 @@ class Scanpay extends PaymentModule
         );
     }
 
-    /**
-     *  Log a DEBUG message to the PrestaShop log
-     */
-    public function debug($msg)
-    {
-        PrestaShopLogger::addLog(
-            $msg,
-            1, // severity: 1 = debug
-            null, // error code
-            null, // object type
-            null // object id
-        );
-    }
-
     /* Extract the shopid from an apikey */
     public function extractshopid($apikey)
     {
