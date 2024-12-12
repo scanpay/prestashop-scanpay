@@ -36,6 +36,7 @@ class Scanpay
         $this->headers = [
             'authorization' => 'Authorization: Basic ' . base64_encode($apikey),
             'x-sdk' => 'X-SDK: PHP-1.5.3/' . PHP_VERSION,
+            'x-shop-plugin' => 'prestashop/' . _PS_VERSION_ . '/{{ VERSION }}',
             'content-type' => 'Content-Type: application/json',
             'expect' => 'Expect: ',
         ];
