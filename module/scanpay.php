@@ -152,7 +152,7 @@ class Scanpay extends PaymentModule
             $states = explode(',', $states);
             $doCapture = false;
             foreach ($states as $state) {
-                if ($params['newOrderStatus']->id === intval($state)) {
+                if ($params['newOrderStatus']->id === (int) $state) {
                     $doCapture = true;
                     break;
                 }
@@ -195,29 +195,72 @@ class Scanpay extends PaymentModule
         }
     }
 
+    public function fmtDeltaTime($dt)
+    {
+        $minute = 60;
+        $hour = $minute * 60;
+        $day = $hour * 24;
+        if ($dt <= 1) {
+            return '1 second ago';
+        } elseif ($dt < $minute) {
+            return (string) $dt . ' seconds ago';
+        } elseif ($dt < $minute + 30) {
+            return '1 minute ago';
+        } elseif ($dt < $hour) {
+            return (string) round((float) $dt / $minute) . ' minutes ago';
+        } elseif ($dt < $hour + 30 * $minute) {
+            return '1 hour ago';
+        } elseif ($dt < $day) {
+            return (string) round((float) $dt / $hour) . ' hours ago';
+        } elseif ($dt < $day + 12 * $hour) {
+            return '1 day ago';
+        } else {
+            return (string) round((float) $dt / $day) . ' days ago';
+        }
+    }
+
+    public function getPingUrlStatus($mtime)
+    {
+        $t = time();
+        if ($mtime > $t) {
+            error_log('last modified time is in the future');
+
+            return;
+        }
+        if ($t < $mtime + 900) {
+            return 'ok';
+        } elseif ($t < $mtime + 3600) {
+            return 'warning';
+        } elseif ($mtime > 0) {
+            return 'error';
+        } else {
+            return 'never--pinged';
+        }
+    }
+
     /* Configuration handling (Settings) */
     public function getContent()
     {
-        $output = null;
+        $captureOnStatus = Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS');
         $settings = [
-            'SCANPAY_TITLE' => Configuration::get('SCANPAY_TITLE'),
+            'SCANPAY_TITLE' => Configuration::get('SCANPAY_TITLE') ?? 'Credit/Debit Card',
             'SCANPAY_APIKEY' => Configuration::get('SCANPAY_APIKEY'),
             'SCANPAY_LANGUAGE' => Configuration::get('SCANPAY_LANGUAGE'),
             'SCANPAY_AUTOCAPTURE' => Configuration::get('SCANPAY_AUTOCAPTURE'),
-            'SCANPAY_CAPTURE_ON_ORDER_STATUS[]' => empty(Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS')) ?
-                [] : explode(',', Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS')),
+            'SCANPAY_CAPTURE_ON_ORDER_STATUS[]' => empty($captureOnStatus) ? [] : explode(',', $captureOnStatus),
             'SCANPAY_MOBILEPAY' => Configuration::get('SCANPAY_MOBILEPAY'),
         ];
-        /* Update configuration if config is submitted */
+
+        // Update configuration if config is submitted (POST)
         if (Tools::isSubmit('submit' . $this->name)) {
+            $captureOnStatus = Tools::getValue('SCANPAY_CAPTURE_ON_ORDER_STATUS');
             $settings = [
-                'SCANPAY_TITLE' => strval(Tools::getValue('SCANPAY_TITLE')),
-                'SCANPAY_APIKEY' => strval(Tools::getValue('SCANPAY_APIKEY')),
-                'SCANPAY_LANGUAGE' => strval(Tools::getValue('SCANPAY_LANGUAGE')),
-                'SCANPAY_AUTOCAPTURE' => intval(Tools::getValue('SCANPAY_AUTOCAPTURE')),
-                'SCANPAY_CAPTURE_ON_ORDER_STATUS[]' => empty(Tools::getValue('SCANPAY_CAPTURE_ON_ORDER_STATUS')) ?
-                    [] : Tools::getValue('SCANPAY_CAPTURE_ON_ORDER_STATUS'),
-                'SCANPAY_MOBILEPAY' => intval(Tools::getValue('SCANPAY_MOBILEPAY')),
+                'SCANPAY_TITLE' => (string) Tools::getValue('SCANPAY_TITLE'),
+                'SCANPAY_APIKEY' => (string) Tools::getValue('SCANPAY_APIKEY'),
+                'SCANPAY_LANGUAGE' => (string) Tools::getValue('SCANPAY_LANGUAGE'),
+                'SCANPAY_AUTOCAPTURE' => (int) Tools::getValue('SCANPAY_AUTOCAPTURE'),
+                'SCANPAY_CAPTURE_ON_ORDER_STATUS[]' => empty($captureOnStatus) ? [] : $captureOnStatus,
+                'SCANPAY_MOBILEPAY' => (int) Tools::getValue('SCANPAY_MOBILEPAY'),
             ];
             foreach ($settings as $key => $value) {
                 if (substr($key, -2) === '[]') {
@@ -228,11 +271,7 @@ class Scanpay extends PaymentModule
             }
         }
 
-        if (!$settings['SCANPAY_TITLE']) {
-            $settings['SCANPAY_TITLE'] = 'Credit/Debit Card';
-        }
-
-        /* Setup the configuration form */
+        // Setup the configuration form
         $helper = new HelperForm();
         $helper->table = $this->table;
         $helper->module = $this;
@@ -246,58 +285,10 @@ class Scanpay extends PaymentModule
 
         /* Create Ping URL graphic */
         $shopid = $this->extractshopid($settings['SCANPAY_APIKEY']);
-        if ($shopid) {
-            $lastpingtime = SPDB_Seq::load($shopid)['mtime'];
-        } else {
-            $lastpingtime = 0;
-        }
+        $lastpingtime = ($shopid) ? SPDB_Seq::load($shopid)['mtime'] : 0;
         $pingurl = $this->context->link->getModuleLink($this->name, 'ping', [], true);
-
-        function fmtDeltaTime($dt)
-        {
-            $minute = 60;
-            $hour = $minute * 60;
-            $day = $hour * 24;
-            if ($dt <= 1) {
-                return '1 second ago';
-            } elseif ($dt < $minute) {
-                return (string) $dt . ' seconds ago';
-            } elseif ($dt < $minute + 30) {
-                return '1 minute ago';
-            } elseif ($dt < $hour) {
-                return (string) round((float) $dt / $minute) . ' minutes ago';
-            } elseif ($dt < $hour + 30 * $minute) {
-                return '1 hour ago';
-            } elseif ($dt < $day) {
-                return (string) round((float) $dt / $hour) . ' hours ago';
-            } elseif ($dt < $day + 12 * $hour) {
-                return '1 day ago';
-            } else {
-                return (string) round((float) $dt / $day) . ' days ago';
-            }
-        }
-
-        function getPingUrlStatus($mtime)
-        {
-            $t = time();
-            if ($mtime > $t) {
-                error_log('last modified time is in the future');
-
-                return;
-            }
-            if ($t < $mtime + 900) {
-                return 'ok';
-            } elseif ($t < $mtime + 3600) {
-                return 'warning';
-            } elseif ($mtime > 0) {
-                return 'error';
-            } else {
-                return 'never--pinged';
-            }
-        }
-
-        $pingclass = 'scanpay--pingurl--' . getPingUrlStatus($lastpingtime);
-        $pingdt_desc = fmtDeltaTime(time() - $lastpingtime);
+        $pingclass = 'scanpay--pingurl--' . $this->getPingUrlStatus($lastpingtime);
+        $pingdt_desc = $this->fmtDeltaTime(time() - $lastpingtime);
 
         // Assign variables to the Smarty context
         $this->context->smarty->assign([
@@ -309,8 +300,8 @@ class Scanpay extends PaymentModule
 
         $this->context->controller->addCSS($this->local_path . 'views/css/settings.css');
         $this->context->controller->addJS($this->local_path . 'views/js/settings.js');
-        $captureOnOrderStatusContent = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/captureonorderstatus.tpl');
 
+        $captureOnOrderStatusContent = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/captureonorderstatus.tpl');
         foreach (OrderState::getOrderStates($this->context->language->id) as $status) {
             $captureOnOrderStatusList[] = ['status' => $status['id_order_state'], 'name' => $status['name']];
         }
