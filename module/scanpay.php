@@ -11,8 +11,6 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require_once dirname(__FILE__) . '/classes/spdb.php';
-
 class Scanpay extends PaymentModule
 {
     protected $_html = '';
@@ -38,6 +36,8 @@ class Scanpay extends PaymentModule
 
     public function install()
     {
+        require dirname(__FILE__) . '/classes/spdb.php';
+
         if (!SPDB_Seq::mktable()) {
             return false;
         }
@@ -118,6 +118,7 @@ class Scanpay extends PaymentModule
     /* Order status change hook */
     public function hookActionOrderStatusPostUpdate($params)
     {
+        require_once dirname(__FILE__) . '/classes/spdb.php';
         $states = Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS');
         if (!empty($states)) {
             $order = new Order($params['id_order']);
@@ -209,6 +210,7 @@ class Scanpay extends PaymentModule
     /* Configuration handling (Settings) */
     public function getContent()
     {
+        require dirname(__FILE__) . '/classes/spdb.php';
         $captureOnStatus = Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS');
         $settings = [
             'SCANPAY_TITLE' => Configuration::get('SCANPAY_TITLE') ?? 'Credit/Debit Card',
