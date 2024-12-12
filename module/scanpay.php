@@ -59,20 +59,6 @@ class Scanpay extends PaymentModule
         return parent::uninstall();
     }
 
-    /**
-     *  Log an ERROR message to the PrestaShop log
-     */
-    public function log($msg)
-    {
-        PrestaShopLogger::addLog(
-            $msg,
-            3, // severity: 3 = error
-            null, // error code
-            null, // object type
-            null // object id
-        );
-    }
-
     /* Extract the shopid from an apikey */
     public function extractshopid($apikey)
     {
@@ -170,7 +156,7 @@ class Scanpay extends PaymentModule
                 $this->context->controller->confirmations[] = $this->l('Order was successfully captured');
             } catch (Exception $e) {
                 $this->context->controller->errors[] = Tools::displayError($this->l('Order capture failed: ') . $e->getMessage());
-                $this->log('capture failed: ' . $e->getMessage());
+                PrestaShopLogger::addLog('capture failed: ' . $e->getMessage(), 2);
 
                 return;
             }

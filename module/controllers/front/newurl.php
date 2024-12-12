@@ -25,7 +25,7 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
         $apikey = Configuration::get('SCANPAY_APIKEY');
         $shopid = $scanpay->extractshopid($apikey);
         if (!$shopid) {
-            $scanpay->log('invalid Scanpay API-key scheme');
+            PrestaShopLogger::addLog('invalid Scanpay API-key scheme', 3);
             exit($scanpay->l('Internal server error, please contact the shop.'));
         }
 
@@ -139,13 +139,13 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
         try {
             $paymenturl = $cl->newURL($data);
         } catch (Exception $e) {
-            $scanpay->log('failed to get Scanpay payment URL: ' . $e->getMessage());
+            PrestaShopLogger::addLog('failed to get Scanpay payment URL: ' . $e->getMessage(), 3);
             exit($scanpay->l('Internal server error, please contact the shop.'));
         }
 
         $cartid = (int) $cart->id;
         if (!SPDB_Carts::insert($cartid, $shopid)) {
-            $scanpay->log('A customer attempted to pay cart #' . $cartid . ' again.');
+            PrestaShopLogger::addLog('A customer attempted to pay cart #' . $cartid . ' again.', 3);
             exit($scanpay->l('Cart has already been paid.'));
         }
 

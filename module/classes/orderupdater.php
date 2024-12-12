@@ -56,7 +56,7 @@ class SPOrderUpdater
                 /* Extract the cartid from the order id */
                 $arr = explode('_', $orderid);
                 if (count($arr) !== 2 || $arr[0] !== 'cart' || !filter_var($arr[1], FILTER_VALIDATE_INT)) {
-                    $scanpay->log("Could not parse cart id from scanpay order $orderid (trnid=" . $change['id'] . ')');
+                    PrestaShopLogger::addLog("Could not parse cart id from scanpay order $orderid (trnid=" . $change['id'] . ')', 3);
                     continue;
                 }
                 $cartid = (int) $arr[1];
@@ -64,11 +64,11 @@ class SPOrderUpdater
                 /* Load the cart entry created upon payment link generation */
                 $row = SPDB_Carts::load($cartid);
                 if (!$row) {
-                    $scanpay->log("no matching cart #$cartid (trnid=" . $change['id'] . ')');
+                    PrestaShopLogger::addLog("no matching cart #$cartid (trnid=" . $change['id'] . ')', 3);
                     continue;
                 }
                 if ((int) $row['shopid'] !== $shopid) {
-                    $scanpay->log("seq shopid does not match stored shopid for cart #$cartid (trnid=" . $change['id'] . ')');
+                    PrestaShopLogger::addLog("seq shopid does not match stored shopid for cart #$cartid (trnid=" . $change['id'] . ')', 3);
                     continue;
                 }
                 if ((int) $row['rev'] >= (int) $change['rev']) {
@@ -86,7 +86,7 @@ class SPOrderUpdater
                     $cart = new Cart($cartid);
                     $extra = ['transaction_id' => (int) $change['id']];
                     if (!$scanpay->validateOrder($cartid, _PS_OS_PAYMENT_, (float) $authorized, $title, null, $extra, null, false, $cart->secure_key)) {
-                        $scanpay->log('failed to validate order (trnid=' . $change['id'] . ')');
+                        PrestaShopLogger::addLog('failed to validate order (trnid=' . $change['id'] . ')', 3);
                         continue;
                     }
                     $psorderid = method_exists('Order', 'getIdByCartId') ? Order::getIdByCartId($cartid) : Order::getOrderByCartId($cartid);

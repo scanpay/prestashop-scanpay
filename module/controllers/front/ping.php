@@ -26,7 +26,7 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         $scanpay = new Scanpay();
         $shopid = $scanpay->extractshopid($apikey);
         if (!$shopid) {
-            $scanpay->log('invalid Scanpay API-key scheme');
+            PrestaShopLogger::addLog('invalid Scanpay API-key scheme', 3);
             echo json_encode(['error' => 'invalid Scanpay API-key scheme']);
 
             return;
@@ -37,7 +37,7 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         try {
             $ping = $cl->handlePing(['body' => $body]);
         } catch (Exception $e) {
-            $scanpay->log('invalid ping: ' . $e->getMessage());
+            PrestaShopLogger::addLog('invalid ping: ' . $e->getMessage(), 1);
             echo json_encode(['error' => $e->getMessage()]);
 
             return;
@@ -61,7 +61,7 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         try {
             SPOrderUpdater::update($shopid, $myseq);
         } catch (Exception $e) {
-            $scanpay->log('Encountered error while updating: ' . $e);
+            PrestaShopLogger::addLog('Encountered error while updating: ' . $e, 3);
             echo json_encode(['error' => 'failed to update orders']);
 
             return;
