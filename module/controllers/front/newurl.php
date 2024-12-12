@@ -77,9 +77,9 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
             $linetotal = $cart->getOrderTotal(true, Cart::BOTH_WITHOUT_SHIPPING, [$product]);
             $items[] = [
                 'name' => $product['name'],
-                'quantity' => intval($product['cart_quantity']),
+                'quantity' => (int) $product['cart_quantity'],
                 'total' => $linetotal,
-                'sku' => strval($product['id_product']),
+                'sku' => (string) $product['id_product'],
             ];
         }
 
