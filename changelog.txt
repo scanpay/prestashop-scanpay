@@ -27,10 +27,10 @@ Changelog
 * Add - Introduced `Capture on Complete` functionality.
 
 = 1.0.0 - 2019-09-17 =
-* Fix - Properly handled non-transaction sequence entries.
+* Fix - Properly handle non-transaction seq events.
 
 = 0.1.3 - 2018-11-02 =
-* Fix - Returned success response on ping when there are no updates.
+* Fix - Return the correct response to scanpay pings.
 
 = 0.1.1 - 2017-12-02 =
 * Fix - Resolved error during the first `seqdb` load.
