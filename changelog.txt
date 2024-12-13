@@ -1,0 +1,39 @@
+Changelog
+=========
+
+= 1.2.0 - 2024-12-13 =
+* Fix - Undefined property `$is_eu_compatible`.
+* Fix - Applied PrestaShop Coding Standards.
+* Fix - Updated module to follow the PrestaShop folder structure.
+* Fix - Added `.htaccess` file as required by PrestaShop.
+* Fix - Escaped HTML output in the ping URL template.
+* Fix - Use type casting over intval and strval.
+* Fix - Replaced deprecated `Logger` with `PrestaShopLogger`.
+* Fix - Corrected typos in error messages.
+* Fix - Combined CSS and JS files for better performance.
+* Update - Converted jQuery to vanilla JavaScript.
+* Update - Removed unused code.
+
+= 1.1.3 - 2021-12-16 =
+* Fix - `Capture on Status` now uses the paid order amount correctly.
+
+= 1.1.2 - 2020-02-06 =
+* Fix - Corrected dropdown functionality for `Capture on Status`.
+
+= 1.1.1 - 2020-02-06 =
+* Add - Enhanced `Capture on Complete` to support custom statuses.
+
+= 1.1.0 - 2020-02-03 =
+* Add - Introduced `Capture on Complete` functionality.
+
+= 1.0.0 - 2019-09-17 =
+* Fix - Properly handled non-transaction sequence entries.
+
+= 0.1.3 - 2018-11-02 =
+* Fix - Returned success response on ping when there are no updates.
+
+= 0.1.1 - 2017-12-02 =
+* Fix - Resolved error during the first `seqdb` load.
+
+= 0.1.0 - 2017-12-01 =
+* Add - Initial release.
