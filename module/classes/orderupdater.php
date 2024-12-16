@@ -79,7 +79,6 @@ class SPOrderUpdater
                         PrestaShopLogger::addLog('failed to validate order (trnid=' . $change['id'] . ')', 3);
                         continue;
                     }
-                    $psorderid = method_exists('Order', 'getIdByCartId') ? Order::getIdByCartId($cartid) : Order::getOrderByCartId($cartid);
                 }
 
                 /* Register order data */
