@@ -151,7 +151,7 @@ class Scanpay extends PaymentModule
                 'index' => $spdata['nacts'],
             ];
             require_once dirname(__FILE__) . '/classes/libscanpay.php';
-            $cl = new Scanpay\Scanpay(Configuration::get('SCANPAY_APIKEY'));
+            $cl = new ScanpayClient(Configuration::get('SCANPAY_APIKEY'));
             try {
                 $cl->capture($spdata['trnid'], $capturedata);
                 $this->context->controller->confirmations[] = $this->l('Order was successfully captured');

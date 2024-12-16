@@ -29,7 +29,7 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
             exit($scanpay->l('Internal server error, please contact the shop.'));
         }
 
-        $cl = new Scanpay\Scanpay($apikey);
+        $cl = new ScanpayClient($apikey);
         $bill = new Address((int) $cart->id_address_invoice);
         $ship = new Address((int) $cart->id_address_delivery);
         $successurl = $this->context->link->getModuleLink($scanpay->name, 'success', [

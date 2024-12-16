@@ -35,7 +35,7 @@ class SPOrderUpdater
     public static function update($shopid, $myseq, $updatemtime = true)
     {
         $scanpay = new Scanpay();
-        $cl = new Scanpay\Scanpay(Configuration::get('SCANPAY_APIKEY'));
+        $cl = new ScanpayClient(Configuration::get('SCANPAY_APIKEY'));
         /* Run the synchronization process */
         while (1) {
             /* Perform a Scanpay Seq request */
