@@ -13,23 +13,13 @@ require_once dirname(__FILE__) . '/spdb.php';
 
 class SPOrderUpdater
 {
-    private static function getcurnum($str)
+    private static function currencyFloat($str)
     {
         $num = explode(' ', $str)[0];
-        $parts = explode('.', $num);
-        $n = count($parts);
-        if ($n !== 1 && $n !== 2) {
-            throw new Exception('invalid money value received from Scanpay ' . $str);
+        if (!is_numeric($num)) {
+            throw new Exception('Invalid money value received from Scanpay: ' . $str);
         }
-        foreach ($parts as $p) {
-            for ($i = 0; $i < strlen($p); ++$i) {
-                if ($p[$i] < '0' || $p[$i] > '9') {
-                    throw new Exception('invalid money value received from Scanpay ' . $str);
-                }
-            }
-        }
-
-        return $num;
+        return (float) $num;
     }
 
     public static function update($shopid, $myseq, $updatemtime = true)
@@ -75,7 +65,7 @@ class SPOrderUpdater
                     continue;
                 }
 
-                $authorized = self::getcurnum($change['totals']['authorized']);
+                $authorized = self::currencyFloat($change['totals']['authorized']);
 
                 /* Get the prestashop orderid from the cartid */
                 $psorderid = method_exists('Order', 'getIdByCartId') ? Order::getIdByCartId($cartid) : Order::getOrderByCartId($cartid);
