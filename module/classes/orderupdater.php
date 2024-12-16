@@ -26,24 +26,21 @@ class SPOrderUpdater
     {
         $scanpay = new Scanpay();
         $cl = new ScanpayClient(Configuration::get('SCANPAY_APIKEY'));
-        /* Run the synchronization process */
-        while (1) {
-            /* Perform a Scanpay Seq request */
-            $res = $cl->seq($myseq);
 
-            /* Validate that the response seq is higher than the current seq */
+        while (1) {
+            $res = $cl->seq($myseq);
             if ($res['seq'] <= $myseq) {
                 return;
             }
 
-            /* Loop through all the changes */
+            // Loop through all the changes
             foreach ($res['changes'] as $change) {
                 if ($change['type'] !== 'transaction') {
                     continue;
                 }
                 $orderid = $change['orderid'];
 
-                /* Extract the cartid from the order id */
+                // Extract the cartid from the order id
                 $arr = explode('_', $orderid);
                 if (count($arr) !== 2 || $arr[0] !== 'cart' || !filter_var($arr[1], FILTER_VALIDATE_INT)) {
                     PrestaShopLogger::addLog("Could not parse cart id from scanpay order $orderid (trnid=" . $change['id'] . ')', 3);
@@ -51,7 +48,7 @@ class SPOrderUpdater
                 }
                 $cartid = (int) $arr[1];
 
-                /* Load the cart entry created upon payment link generation */
+                // Load the cart entry created upon payment link generation
                 $row = SPDB_Carts::load($cartid);
                 if (!$row) {
                     PrestaShopLogger::addLog("no matching cart #$cartid (trnid=" . $change['id'] . ')', 3);
@@ -65,29 +62,36 @@ class SPOrderUpdater
                     continue;
                 }
 
-                $authorized = self::currencyFloat($change['totals']['authorized']);
-
-                /* Get the prestashop orderid from the cartid */
                 $psorderid = Order::getIdByCartId($cartid);
-
-                /* Create a new order, if one has not been assigned to the cart yet */
                 if ($psorderid === false) {
-                    $title = 'Scanpay';
+                    // Create a new order from cart
                     $cart = new Cart($cartid);
+                    $authorized = self::currencyFloat($change['totals']['authorized']);
                     $extra = ['transaction_id' => (int) $change['id']];
-                    if (!$scanpay->validateOrder($cartid, _PS_OS_PAYMENT_, (float) $authorized, $title, null, $extra, null, false, $cart->secure_key)) {
+
+                    $status = $scanpay->validateOrder(
+                        $cartid,                // Cart ID
+                        _PS_OS_PAYMENT_,        // Order state (payment accepted)
+                        $authorized,            // Authorized amount
+                        'Scanpay',              // Payment method title
+                        null,                   // Optional message (none)
+                        $extra,                 // Extra variables
+                        null,                   // Currency (default)
+                        false,                  // $dont_touch_amount
+                        $cart->secure_key       // Secure key for the cart
+                    );
+
+                    if (!$status) {
                         PrestaShopLogger::addLog('failed to validate order (trnid=' . $change['id'] . ')', 3);
                         continue;
                     }
                 }
-
-                /* Register order data */
                 SPDB_Carts::update($cartid, $shopid, $change);
             }
 
             $myseq = (int) $res['seq'];
 
-            /* Save the new seq */
+            // Save the new seq
             $updated = SPDB_Seq::save($shopid, $myseq, $updatemtime);
             if (!$updated) {
                 return;
