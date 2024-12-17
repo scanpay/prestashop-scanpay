@@ -1,15 +1,10 @@
 <?php
-
 /**
  * @author    Scanpay <contact@scanpay.dk>
  * @copyright Scanpay ApS. All rights reserved.
  * @license   https://opensource.org/licenses/MIT MIT License
- *
- *  Scanpay module client lib
- *  Modified for PrestaShop (w/o Subscriptions)
- *  Version 2.3.0 (2024-12-16)
+ * @version   2.3.0 (2024-12-16)
  */
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -28,11 +23,11 @@ class ScanpayClient
             'Content-Type: application/json',
             'Expect: ',
         ];
-        /**
-         * The 'Expect' header will disable libcurl's expect-logic,
-         * which will save us a HTTP roundtrip on POSTs >1024b.
-         * This is only relevant for HTTP 1.1.
-         */
+        /*
+            The 'Expect' header will disable libcurl's expect-logic,
+            which will save us a HTTP roundtrip on POSTs >1024b.
+            This is only relevant for HTTP 1.1.
+        */
     }
 
     private function request(string $path, ?array $opts, ?array $data): array
@@ -79,13 +74,13 @@ class ScanpayClient
         if (!is_array($json)) {
             throw new \Exception('Invalid JSON response from server');
         }
+
         return $json;
     }
 
     /**
      * Create a new Scanpay payment link.
-     * @return string The payment link.
-     * @throws \Exception If the request fails or the response is invalid.
+     * @return string
      */
     public function newURL(array $data): string
     {
@@ -99,15 +94,14 @@ class ScanpayClient
 
     /**
      * Get array of changes since the reqested sequence number.
-     * @return array The changes array.
-     * @throws \Exception If the request fails or the response is invalid.
+     * @return array
      */
     public function seq(int $num): array
     {
         $o = $this->request('/v1/seq/' . $num, null, null);
         if (isset($o['seq'], $o['changes']) && is_int($o['seq']) && is_array($o['changes'])) {
             $empty = empty($o['changes']);
-            if (($empty && $o['seq'] <= $num) || (! $empty && $o['seq'] > $num)) {
+            if (($empty && $o['seq'] <= $num) || (!$empty && $o['seq'] > $num)) {
                 return $o;
             }
         }
@@ -116,8 +110,7 @@ class ScanpayClient
 
     /**
      * Capture a transaction.
-     * @return array The transaction status.
-     * @throws \Exception If the request fails.
+     * @return array
      */
     public function capture(int $trnid, array $data): array
     {

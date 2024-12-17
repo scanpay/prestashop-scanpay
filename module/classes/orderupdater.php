@@ -62,8 +62,7 @@ class SPOrderUpdater
                     continue;
                 }
 
-                $psorderid = Order::getIdByCartId($cartid);
-                if ($psorderid === false) {
+                if (Order::getIdByCartId($cartid) === false) {
                     // Create a new order from cart
                     $cart = new Cart($cartid);
                     $authorized = self::currencyFloat($change['totals']['authorized']);
