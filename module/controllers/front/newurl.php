@@ -22,10 +22,10 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
             exit($scanpay->l('Invalid cart'));
         }
 
-        $apikey = Configuration::get('SCANPAY_APIKEY');
-        $shopid = $scanpay->extractshopid($apikey);
+        $apikey = Configuration::get('SCANPAY_APIKEY') ?: '';
+        $shopid = (int) explode(':', $apikey)[0];
         if (!$shopid) {
-            PrestaShopLogger::addLog('invalid Scanpay API-key scheme', 3);
+            PrestaShopLogger::addLog('invalid Scanpay API-key', 3);
             exit($scanpay->l('Internal server error, please contact the shop.'));
         }
 

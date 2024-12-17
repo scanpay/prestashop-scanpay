@@ -59,17 +59,6 @@ class Scanpay extends PaymentModule
         return parent::uninstall();
     }
 
-    /* Extract the shopid from an apikey */
-    public function extractshopid($apikey)
-    {
-        $shopid = explode(':', $apikey)[0];
-        if (!ctype_digit($shopid)) {
-            return false;
-        }
-
-        return (int) $shopid;
-    }
-
     /* Create array of payment options to be shown in checkout */
     public function hookPaymentOptions($params)
     {
@@ -254,7 +243,8 @@ class Scanpay extends PaymentModule
         $helper->token = Tools::getAdminTokenLite('AdminModules');
 
         /* Create Ping URL graphic */
-        $shopid = $this->extractshopid($settings['SCANPAY_APIKEY']);
+        $apikey = Configuration::get('SCANPAY_APIKEY') ?: '';
+        $shopid = (int) explode(':', $apikey)[0];
         $lastpingtime = ($shopid) ? SPDB_Seq::load($shopid)['mtime'] : 0;
         $pingurl = $this->context->link->getModuleLink($this->name, 'ping', [], true);
         $pingclass = 'scanpay--pingurl--' . $this->getPingUrlStatus($lastpingtime);
