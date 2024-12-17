@@ -124,9 +124,7 @@ class Scanpay extends PaymentModule
             }
             $spdata = SPDB_Carts::load($order->id_cart);
             if (!$spdata) {
-                $this->context->controller->errors[] = Tools::displayError($this->l('Failed to load scanpay transaction data'));
-
-                return;
+                throw new Exception($this->l('Failed to load scanpay transaction data'));
             }
             /* Already captured */
             if ((float) $spdata['captured'] > 0) {
@@ -145,10 +143,7 @@ class Scanpay extends PaymentModule
                 $cl->capture($spdata['trnid'], $capturedata);
                 $this->context->controller->confirmations[] = $this->l('Order was successfully captured');
             } catch (Exception $e) {
-                $this->context->controller->errors[] = Tools::displayError($this->l('Order capture failed: ') . $e->getMessage());
-                PrestaShopLogger::addLog('capture failed: ' . $e->getMessage(), 2);
-
-                return;
+                throw new Exception($this->l('Order capture failed: ') . $e->getMessage());
             }
         }
     }
