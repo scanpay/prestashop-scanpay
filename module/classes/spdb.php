@@ -12,7 +12,7 @@ class SPDB_Seq
 {
     const TABLE = _DB_PREFIX_ . 'scanpay_seq';
 
-    public static function mktable()
+    public static function mktable(): bool
     {
         return Db::getInstance()->execute(
             'CREATE TABLE IF NOT EXISTS ' . self::TABLE . ' (
@@ -23,10 +23,8 @@ class SPDB_Seq
         );
     }
 
-    private static function mkrow($shopid)
+    private static function mkrow(int $shopid): bool
     {
-        $shopid = (int) $shopid;
-
         return Db::getInstance()->execute(
             'INSERT INTO ' . self::TABLE . "
             (`shopid`, `seq`)
@@ -36,10 +34,8 @@ class SPDB_Seq
     }
 
     /* Seq */
-    public static function load($shopid)
+    public static function load(int $shopid): array
     {
-        $shopid = (int) $shopid;
-        /* Load the current seq for the shop */
         $seqobj = Db::getInstance()->getRow(
             'SELECT * FROM ' . self::TABLE . "
             WHERE `shopid` = $shopid"
@@ -55,32 +51,25 @@ class SPDB_Seq
         return $seqobj;
     }
 
-    public static function save($shopid, $seq, $updatemtime = true)
+    public static function save(int $shopid, int $seq, bool $update = true): bool
     {
-        $shopid = (int) $shopid;
-        $seq = (int) $seq;
-        $now = (int) time();
-        if (!$updatemtime) {
+        if (!$update) {
             return Db::getInstance()->execute(
                 'UPDATE ' . self::TABLE . "
-                SET
-                `seq`   = $seq
+                SET `seq` = $seq
                 WHERE `shopid` = $shopid AND `seq` < $seq"
             );
         }
-
+        $now = time();
         return Db::getInstance()->execute(
             'UPDATE ' . self::TABLE . "
-            SET
-            `seq`   = $seq,
-            `mtime` = $now
+            SET `seq` = $seq, `mtime` = $now
             WHERE `shopid` = $shopid AND `seq` < $seq"
         );
     }
 
-    public static function updatemtime($shopid)
+    public static function updatemtime(int $shopid): void
     {
-        $shopid = (int) $shopid;
         $now = time();
         Db::getInstance()->execute(
             'UPDATE ' . self::TABLE . "
@@ -94,7 +83,7 @@ class SPDB_Carts
 {
     const TABLE = _DB_PREFIX_ . 'scanpay_carts';
 
-    public static function mktable()
+    public static function mktable(): bool
     {
         return Db::getInstance()->execute(
             'CREATE TABLE IF NOT EXISTS ' . self::TABLE . ' (
@@ -112,10 +101,8 @@ class SPDB_Carts
         );
     }
 
-    public static function insert($cartid, $shopid)
+    public static function insert(int $cartid, int $shopid): bool
     {
-        $shopid = (int) $shopid;
-        $cartid = (int) $cartid;
         $inserted = Db::getInstance()->execute(
             'INSERT IGNORE INTO ' . self::TABLE .
                 "(`cartid`, `shopid`)
@@ -134,7 +121,7 @@ class SPDB_Carts
         return true;
     }
 
-    private static function getcurnum($str)
+    private static function getcurnum(string $str): string
     {
         $num = explode(' ', $str)[0];
         $parts = explode('.', $num);
@@ -153,18 +140,13 @@ class SPDB_Carts
         return $num;
     }
 
-    public static function load($cartid)
+    public static function load(int $cartid): bool
     {
-        return Db::getInstance()->getRow(
-            'SELECT * FROM ' . self::TABLE . "
-            WHERE `cartid` = $cartid"
-        );
+        return Db::getInstance()->getRow('SELECT * FROM ' . self::TABLE . " WHERE `cartid` = $cartid");
     }
 
-    public static function update($cartid, $shopid, $change)
+    public static function update(int $cartid, int $shopid, array $change): void
     {
-        $cartid = (int) $cartid;
-        $shopid = (int) $shopid;
         $trnid = (int) $change['id'];
         $orderid = (int) $change['orderid'];
         $rev = (int) $change['rev'];
