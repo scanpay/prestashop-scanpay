@@ -148,28 +148,16 @@ class Scanpay extends PaymentModule
         }
     }
 
-    public function fmtDeltaTime($dt)
+    private function fmtDeltaTime($dt)
     {
-        $minute = 60;
-        $hour = $minute * 60;
-        $day = $hour * 24;
         if ($dt <= 1) {
             return '1 second ago';
-        } elseif ($dt < $minute) {
+        } elseif ($dt < 120) {
             return (string) $dt . ' seconds ago';
-        } elseif ($dt < $minute + 30) {
-            return '1 minute ago';
-        } elseif ($dt < $hour) {
-            return (string) round((float) $dt / $minute) . ' minutes ago';
-        } elseif ($dt < $hour + 30 * $minute) {
-            return '1 hour ago';
-        } elseif ($dt < $day) {
-            return (string) round((float) $dt / $hour) . ' hours ago';
-        } elseif ($dt < $day + 12 * $hour) {
-            return '1 day ago';
-        } else {
-            return (string) round((float) $dt / $day) . ' days ago';
+        } elseif ($dt < 3600) {
+            return round($dt / 60) . ' minutes ago';
         }
+        return round($dt / 3600) . ' hours ago';
     }
 
     public function getPingUrlStatus($mtime)
@@ -241,15 +229,12 @@ class Scanpay extends PaymentModule
         $apikey = Configuration::get('SCANPAY_APIKEY') ?: '';
         $shopid = (int) explode(':', $apikey)[0];
         $lastpingtime = ($shopid) ? SPDB_Seq::load($shopid)['mtime'] : 0;
-        $pingurl = $this->context->link->getModuleLink($this->name, 'ping', [], true);
-        $pingclass = 'scanpay--pingurl--' . $this->getPingUrlStatus($lastpingtime);
-        $pingdt_desc = $this->fmtDeltaTime(time() - $lastpingtime);
 
         // Assign variables to the Smarty context
         $this->context->smarty->assign([
-            'pingclass' => $pingclass,
-            'pingdt_desc' => $pingdt_desc,
-            'pingurl' => $pingurl,
+            'pingclass' => 'scanpay--pingurl--' . $this->getPingUrlStatus($lastpingtime),
+            'pingdt_desc' => $this->fmtDeltaTime(time() - $lastpingtime),
+            'pingurl' => $this->context->link->getModuleLink($this->name, 'ping', [], true),
         ]);
         $pingUrlContent = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/pingurl.tpl');
 
