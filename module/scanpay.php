@@ -148,7 +148,7 @@ class Scanpay extends PaymentModule
         }
     }
 
-    private function fmtDeltaTime($dt)
+    private function fmtDeltaTime(int $dt): string
     {
         if ($dt <= 1) {
             return '1 second ago';
@@ -160,22 +160,20 @@ class Scanpay extends PaymentModule
         return round($dt / 3600) . ' hours ago';
     }
 
-    public function getPingUrlStatus($mtime)
+    private function getPingUrlStatus(int $dt): string
     {
-        $t = time();
-        if ($mtime > $t) {
-            error_log('last modified time is in the future');
-
-            return;
+        if ($dt === null) {
+            return 'scanpay--pingurl--never--pinged';
         }
-        if ($t < $mtime + 900) {
-            return 'ok';
-        } elseif ($t < $mtime + 3600) {
-            return 'warning';
-        } elseif ($mtime > 0) {
-            return 'error';
+        if ($dt < 0) {
+            PrestaShopLogger::addLog('last modified time is in the future', 3);
+            return 'scanpay--pingurl--error';
+        } elseif ($dt < 900) {
+            return 'scanpay--pingurl--ok';
+        } elseif ($dt < 3600) {
+            return 'scanpay--pingurl--warning';
         } else {
-            return 'never--pinged';
+            return 'scanpay--pingurl--error';
         }
     }
 
@@ -225,15 +223,21 @@ class Scanpay extends PaymentModule
         $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
 
-        /* Create Ping URL graphic */
+        // Create Ping URL graphic
         $apikey = Configuration::get('SCANPAY_APIKEY') ?: '';
         $shopid = (int) explode(':', $apikey)[0];
-        $lastpingtime = ($shopid) ? SPDB_Seq::load($shopid)['mtime'] : 0;
+        $pingDtime = null;
+        if ($shopid) {
+            $mtime = (int) SPDB_Seq::load($shopid)['mtime'];
+            if ($mtime) {
+                $pingDtime = time() - $mtime;
+            }
+        }
 
         // Assign variables to the Smarty context
         $this->context->smarty->assign([
-            'pingclass' => 'scanpay--pingurl--' . $this->getPingUrlStatus($lastpingtime),
-            'pingdt_desc' => $this->fmtDeltaTime(time() - $lastpingtime),
+            'pingclass' => $this->getPingUrlStatus($pingDtime),
+            'pingdt_desc' => $this->fmtDeltaTime($pingDtime),
             'pingurl' => $this->context->link->getModuleLink($this->name, 'ping', [], true),
         ]);
         $pingUrlContent = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/pingurl.tpl');
