@@ -16,6 +16,8 @@ PrestaShop 8 requires PHP 7.2.5, while PrestaShop 9.0 requires PHP 8.1.
 
 | PHP Features                | Version |
 | :-------------------------- | :-----: |
+| str_starts_with             |   8.0   |
+| string interpolation        |   7.0   |
 | hash_equals                 |   5.6   |
 | curl_strerror               |   5.5   |
 | Array, short syntax         |   5.4   |
