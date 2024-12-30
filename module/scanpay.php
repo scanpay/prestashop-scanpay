@@ -36,18 +36,32 @@ class Scanpay extends PaymentModule
 
     public function install()
     {
-        require dirname(__FILE__) . '/classes/spdb.php';
+        $DB = Db::getInstance();
+        $DB->execute(
+            'CREATE TABLE IF NOT EXISTS ' . _DB_PREFIX_ . 'scanpay_seq' . ' (
+            `shopid` BIGINT UNSIGNED NOT NULL PRIMARY KEY UNIQUE,
+            `seq`    BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            `mtime`  BIGINT UNSIGNED NOT NULL DEFAULT 0
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;'
+        );
 
-        if (!SPDB_Seq::mktable()) {
-            return false;
-        }
-        if (!SPDB_Carts::mktable()) {
-            return false;
-        }
+        $DB->execute(
+            'CREATE TABLE IF NOT EXISTS ' . _DB_PREFIX_ . 'scanpay_carts' . ' (
+            `cartid`     BIGINT UNSIGNED NOT NULL PRIMARY KEY UNIQUE,
+            `shopid`     BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            `trnid`      BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            `orderid`    BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            `rev`        BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            `nacts`      BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            `authorized` decimal(20,6) NOT NULL DEFAULT "0.00",
+            `captured`   decimal(20,6) NOT NULL DEFAULT "0.00",
+            `refunded`   decimal(20,6) NOT NULL DEFAULT "0.00",
+            `voided`     decimal(20,6) NOT NULL DEFAULT "0.00"
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;'
+        );
         if (Shop::isFeatureActive()) {
             Shop::setContext(Shop::CONTEXT_ALL);
         }
-
         return parent::install()
             && $this->registerHook('displayPaymentReturn')
             && $this->registerHook('paymentOptions')
@@ -107,8 +121,8 @@ class Scanpay extends PaymentModule
     /* Order status change hook */
     public function hookActionOrderStatusPostUpdate($params)
     {
-        require_once dirname(__FILE__) . '/classes/spdb.php';
         $states = Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS');
+
         if (!empty($states)) {
             $order = new Order($params['id_order']);
             $states = explode(',', $states);
@@ -122,12 +136,14 @@ class Scanpay extends PaymentModule
             if (!$doCapture) {
                 return;
             }
-            $spdata = SPDB_Carts::load($order->id_cart);
-            if (!$spdata) {
+
+            $DB = Db::getInstance();
+            $table = _DB_PREFIX_ . 'scanpay_carts';
+            $meta = $DB->getRow("SELECT * FROM $table WHERE cartid = $order->id_cart");
+            if (!$meta) {
                 throw new Exception($this->l('Failed to load scanpay transaction data'));
             }
-            /* Already captured */
-            if ((float) $spdata['captured'] > 0) {
+            if ((float) $meta['captured'] > 0) {
                 $this->context->controller->informations[] = $this->l('Order is already captured');
 
                 return;
@@ -135,12 +151,13 @@ class Scanpay extends PaymentModule
             $currency = new Currency((int) $order->id_currency);
             $capturedata = [
                 'total' => "{$order->total_paid} {$currency->iso_code}",
-                'index' => $spdata['nacts'],
+                'index' => $meta['nacts'],
             ];
+
             require_once dirname(__FILE__) . '/classes/libscanpay.php';
-            $cl = new ScanpayClient(Configuration::get('SCANPAY_APIKEY'));
+            $client = new ScanpayClient(Configuration::get('SCANPAY_APIKEY'));
             try {
-                $cl->capture($spdata['trnid'], $capturedata);
+                $client->capture($meta['trnid'], $capturedata);
                 $this->context->controller->confirmations[] = $this->l('Order was successfully captured');
             } catch (Exception $e) {
                 throw new Exception($this->l('Order capture failed: ') . $e->getMessage());
@@ -177,10 +194,20 @@ class Scanpay extends PaymentModule
         }
     }
 
+    private function getMtime(int $shopid): ?int
+    {
+        $DB = Db::getInstance();
+        $table = _DB_PREFIX_ . 'scanpay_seq';
+        $row = $DB->getRow("SELECT mtime FROM $table WHERE shopid = $shopid", false);
+        if (!$row || $row['mtime'] == 0) {
+            return null;
+        }
+        return time() - $row['mtime'];
+    }
+
     /* Configuration handling (Settings) */
     public function getContent()
     {
-        require dirname(__FILE__) . '/classes/spdb.php';
         $captureOnStatus = Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS');
         $settings = [
             'SCANPAY_TITLE' => Configuration::get('SCANPAY_TITLE') ?? 'Credit/Debit Card',
@@ -226,13 +253,7 @@ class Scanpay extends PaymentModule
         // Create Ping URL graphic
         $apikey = Configuration::get('SCANPAY_APIKEY') ?: '';
         $shopid = (int) explode(':', $apikey)[0];
-        $pingDtime = null;
-        if ($shopid) {
-            $mtime = (int) SPDB_Seq::load($shopid)['mtime'];
-            if ($mtime) {
-                $pingDtime = time() - $mtime;
-            }
-        }
+        $pingDtime = $this->getMtime($shopid);
 
         // Assign variables to the Smarty context
         $this->context->smarty->assign([

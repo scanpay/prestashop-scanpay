@@ -9,7 +9,6 @@ if (!defined('_PS_VERSION_')) {
 }
 
 require_once dirname(__FILE__) . '/../../classes/libscanpay.php';
-require_once dirname(__FILE__) . '/../../classes/spdb.php';
 
 class ScanpayNewurlModuleFrontController extends ModuleFrontController
 {
@@ -53,7 +52,6 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
                 'state' => $bill->id_state ? strtolower((new Country($bill->id_state))->iso_code) : '',
                 'company' => $bill->company,
                 'vatin' => $bill->vat_number,
-                'gln' => '',
             ]),
             'shipping' => array_filter([
                 'name' => $ship->firstname . ' ' . $ship->lastname,
@@ -67,7 +65,7 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
             ]),
         ];
 
-        /* Add all items from the cart to the order */
+        // Add all items from the cart to the order
         $items = [];
         foreach ($cart->getProducts() as $product) {
             $linetotal = $cart->getOrderTotal(true, Cart::BOTH_WITHOUT_SHIPPING, [$product]);
@@ -79,7 +77,7 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
             ];
         }
 
-        /* Add shipping costs if applicable */
+        // Add shipping costs if applicable
         $shipcosts = $cart->getOrderTotal(true, Cart::ONLY_SHIPPING);
         if ($shipcosts > 0) {
             $items[] = [
@@ -88,7 +86,7 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
                 'total' => $shipcosts,
             ];
         }
-        /* Add gift wrap costs if applicable */
+        // Add gift wrap costs if applicable
         $giftwrapcosts = $cart->getOrderTotal(true, Cart::ONLY_WRAPPING);
         if ($giftwrapcosts > 0) {
             $items[] = [
@@ -98,14 +96,14 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
             ];
         }
 
-        /* Calculate grand total and round item totals */
+        // Calculate grand total and round item totals
         $grandtotal = 0;
         foreach ($items as $i => $item) {
             $items[$i]['total'] = round($items[$i]['total'], 2);
             $grandtotal += $items[$i]['total'];
         }
 
-        /* Better round some more due to devious floats */
+        // Better round some more due to devious floats
         $grandtotal = round($grandtotal, 2);
         $ordertotal = (float) $cart->getOrderTotal(true, Cart::BOTH);
 
@@ -124,33 +122,21 @@ class ScanpayNewurlModuleFrontController extends ModuleFrontController
             }
         }
 
-        /* Add currencies to item totals */
+        // Add currencies to item totals
         $currency = new Currency((int) $cart->id_currency);
         foreach ($items as $i => $item) {
             $items[$i]['total'] .= ' ' . $currency->iso_code;
         }
-
-        /* Insert the items into the sent data */
         $data['items'] = $items;
 
-        $m = Tools::getValue('paymentmethod');
-
-        /* Create a peyment URL */
         try {
-            $paymenturl = $cl->newURL($data);
+            $url = $cl->newURL($data);
+            $m = Tools::getValue('paymentmethod');
+            $query = ($m) ? ('?go=' . $m) : '';
+            Tools::redirect($url . $query);
         } catch (Exception $e) {
             PrestaShopLogger::addLog('failed to get Scanpay payment URL: ' . $e->getMessage(), 3);
             exit($scanpay->l('Internal server error, please contact the shop.'));
         }
-
-        $cartid = (int) $cart->id;
-        if (!SPDB_Carts::insert($cartid, $shopid)) {
-            PrestaShopLogger::addLog('A customer attempted to pay cart #' . $cartid . ' again.', 3);
-            exit($scanpay->l('Cart has already been paid.'));
-        }
-
-        /* Create the payment method query and redirect the customer to payment */
-        $q = ($m) ? ('?go=' . $m) : '';
-        Tools::redirect($paymenturl . $q);
     }
 }
