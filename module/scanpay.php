@@ -93,29 +93,31 @@ class Scanpay extends PaymentModule
         return $payopts;
     }
 
-    /* Handle the order confirmation page (post-payment) */
-    public function hookDisplayPaymentReturn($params)
+    /**
+     * Show an infobox on the order confirmation page.
+     * @param array $params Parameters passed to the hook
+     * @return string Rendered template content
+     */
+    public function hookDisplayPaymentReturn(array $params): string
     {
-        if (!isset($params['order']) || ($params['order']->module != $this->name)) {
-            return false;
-        }
         $order = $params['order'];
-        if (Validate::isLoadedObject($order) && isset($order->valid)) {
-            $this->smarty->assign([
-                'id_order' => $order->id,
-                'valid' => $order->valid,
-            ]);
+        if (empty($order) || Validate::isLoadedObject($order) === false || $order->module !== $this->name) {
+            return '';
         }
-        if (isset($order->reference) && !empty($order->reference)) {
-            $this->smarty->assign('reference', $order->reference);
+        $payment = $order->getOrderPaymentCollection()->getFirst();
+        if (!$payment) {
+            return '';
         }
-        $this->smarty->assign([
-            'shop_name' => $this->context->shop->name,
-            'reference' => $order->reference,
-            'contact_url' => $this->context->link->getPageLink('contact', true),
-        ]);
+        $currency = new Currency($order->id_currency);
+        $auth = Context::getContext()->getCurrentLocale()->formatPrice($order->total_paid, $currency->iso_code);
 
-        return $this->fetch('module:scanpay/views/templates/hook/payment_return.tpl');
+        $this->context->smarty->assign([
+            'trnid' => '#' . $payment->transaction_id,
+            'auth' => '<b>' . $auth . '</b>',
+            'last4' => '<em>' . $payment->card_number . '</em>',
+            'brand' => $payment->card_brand,
+        ]);
+        return $this->context->smarty->fetch('module:scanpay/views/templates/hook/displayPaymentReturn.tpl');
     }
 
     /* Order status change hook */
