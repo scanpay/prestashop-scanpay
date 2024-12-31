@@ -29,9 +29,8 @@ class Scanpay extends PaymentModule
         $this->is_eu_compatible = 1;
         $this->bootstrap = true;
         parent::__construct();
-        $this->displayName = $this->l('Scanpay');
+        $this->displayName = 'Scanpay';
         $this->description = $this->l('Accept payments using the Scanpay payment gateway');
-        $this->confirmUninstall = $this->l('Are you sure?');
     }
 
     public function install()
@@ -81,12 +80,12 @@ class Scanpay extends PaymentModule
         }
 
         $payopts = [];
-        $title = Configuration::get('SCANPAY_TITLE') ?: 'Credit/Debit Card';
+        $title = Configuration::get('SCANPAY_TITLE');
         $payopts[] = (new PaymentOption())->setCallToActionText($title)
             ->setAction($this->context->link->getModuleLink($this->name, 'newurl', [], true));
 
         if (Configuration::get('SCANPAY_MOBILEPAY')) {
-            $payopts[] = (new PaymentOption())->setCallToActionText($this->l('MobilePay'))
+            $payopts[] = (new PaymentOption())->setCallToActionText('MobilePay')
                 ->setAction($this->context->link->getModuleLink($this->name, 'newurl', ['paymentmethod' => 'mobilepay'], true));
         }
 
@@ -283,21 +282,21 @@ class Scanpay extends PaymentModule
                     'type' => 'text',
                     'label' => $this->l('Title'),
                     'name' => 'SCANPAY_TITLE',
-                    'desc' => $this->l('This controls the title which the user sees during checkout'),
+                    'desc' => $this->l('Sets the title displayed to the user during checkout.'),
                     'required' => true,
                 ],
                 [
                     'type' => 'text',
                     'label' => $this->l('API-key'),
                     'name' => 'SCANPAY_APIKEY',
-                    'desc' => $this->l('Copy your API key from the Scanpay dashboard'),
+                    'desc' => $this->l('Copy your API key from the Scanpay dashboard.'),
                     'required' => true,
                 ],
                 [
                     'type' => 'html',
-                    'label' => $this->l('Ping URL'),
+                    'label' => 'Ping URL',
                     'name' => 'pingurl',
-                    'desc' => $this->l('This is the URL Scanpay can use to notify PrestaShop of changes in transaction status.'),
+                    'desc' => $this->l('Copy this URL to the Scanpay dashboard to enable data synchronization.'),
                     'id' => 'scanpay--pingurl--input',
                     'readonly' => true,
                     'html_content' => $pingUrlContent,
@@ -306,7 +305,7 @@ class Scanpay extends PaymentModule
                     'type' => 'select',
                     'label' => $this->l('Language'),
                     'name' => 'SCANPAY_LANGUAGE',
-                    'desc' => $this->l('Set the payment window language. \'Automatic\' allows Scanpay to choose a language based on the browser of the customer.'),
+                    'desc' => $this->l('Choose the payment window language. Select \'Automatic\' to let Scanpay match the language to the customer\'s browser settings.'),
                     'options' => [
                         'id' => 'language',
                         'name' => 'name',
@@ -328,9 +327,9 @@ class Scanpay extends PaymentModule
                 ],
                 [
                     'type' => 'switch',
-                    'label' => $this->l('Auto-capture'),
+                    'label' => 'Auto-capture',
                     'name' => 'SCANPAY_AUTOCAPTURE',
-                    'desc' => $this->l('Automatically capture transactions upon authorization. Only enable this if you sell services or immaterial goods.'),
+                    'desc' => $this->l('Enable automatic capture of transactions upon authorization. Use this only if you sell services or digital goods.'),
                     'is_bool' => true,
                     'values' => [
                         [
@@ -361,14 +360,14 @@ class Scanpay extends PaymentModule
                     'type' => 'html',
                     'label' => $this->l('Capture on order status'),
                     'name' => 'SCANPAY_CAPTURE_ON_ORDER_STATUS_DUMMY',
-                    'desc' => $this->l('Automatically capture orders when order status changes to one of the statuses selected above.'),
+                    'desc' => $this->l('Automatically capture payments when the order status changes to one of the selected statuses above.'),
                     'html_content' => $captureOnOrderStatusContent,
                 ],
                 [
                     'type' => 'switch',
-                    'label' => $this->l('MobilePay'),
+                    'label' => 'MobilePay',
                     'name' => 'SCANPAY_MOBILEPAY',
-                    'desc' => $this->l('Enable MobilePay in checkout. You must also enable MobilePay in the Scanpay dashboard.'),
+                    'desc' => $this->l('Enable MobilePay as a payment option in checkout. Make sure MobilePay is also activated in your Scanpay Dashboard.'),
                     'is_bool' => true,
                     'values' => [
                         [
