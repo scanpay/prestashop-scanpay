@@ -70,6 +70,35 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         }
     }
 
+    private function addPaymentDetails(int $oid, array $c): void
+    {
+        $order = new Order($oid);
+        $payments = OrderPayment::getByOrderReference($order->reference);
+        if (empty($payments)) {
+            return;
+        }
+        $payment = $payments[0];
+        if ($payment->payment_method !== 'scanpay' || (int) $payment->transaction_id !== (int) $c['id']) {
+            return;
+        }
+        $method = $c['method'][$c['method']['type']];
+        if (isset($method['last4'])) {
+            $payment->card_number = $method['last4'];
+        }
+        if (isset($method['brand'])) {
+            $brand = $method['brand'];
+            if ($brand === 'visadankort') {
+                $brand = 'Visa/Dankort';
+            }
+            $payment->card_brand = ucfirst($brand);
+        }
+        if (isset($method['exp'])) {
+            // Convert Unix timestamp to 'YYYY-MM'
+            $payment->card_expiration = date('Y-m', $method['exp']);
+        }
+        $payment->update();
+    }
+
     private function sync(int $shopid, int $seq)
     {
         $scanpay = new Scanpay();
@@ -107,25 +136,25 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
                     } elseif (Order::getIdByCartId($cartid) === false) {
                         $cart = new Cart($cartid);
                         $authorized = self::currencyFloat($c['totals']['authorized']);
-                        $extra = ['transaction_id' => (int) $c['id']];
-
                         $status = $scanpay->validateOrder(
-                            $cartid,                // Cart ID
-                            _PS_OS_PAYMENT_,        // Order state (payment accepted)
-                            $authorized,            // Authorized amount
-                            'Scanpay',              // Payment method title
-                            null,                   // Optional message (none)
-                            $extra,                 // Extra variables
-                            null,                   // Currency (default)
-                            false,                  // $dont_touch_amount
-                            $cart->secure_key       // Secure key for the cart
+                            $cartid,                    // Cart ID
+                            _PS_OS_PAYMENT_,            // Order state (payment accepted)
+                            $authorized,                // Authorized amount
+                            'scanpay',                  // Payment method title
+                            null,                       // Optional message (none)
+                            [
+                                'transaction_id' => (int) $c['id'],
+                            ],
+                            null,                       // Currency (default)
+                            false,                      // $dont_touch_amount
+                            $cart->secure_key           // Secure key for the cart
                         );
-
                         if (!$status) {
                             PrestaShopLogger::addLog("failed to validate order (trnid={$c['id']})", 3);
                             continue;
                         }
                         $orderid = (int) Order::getIdByCartId($cartid);
+                        $this->addPaymentDetails($orderid, $c);
                         $this->insertMeta($cartid, $orderid, $c);
                     }
                 }
