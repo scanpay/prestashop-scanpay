@@ -51,3 +51,4 @@ for file in $(find "$TMP" -type f -name "*.php"); do
 done
 
 zip -r "$DIR/test-$VERSION.zip" scanpay
+rm -rf "$TMP"
