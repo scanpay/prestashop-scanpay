@@ -16,7 +16,7 @@ class ScanpaySuccessModuleFrontController extends ModuleFrontController
         unset($this->context->cookie->id_cart);
     }
 
-    public function postProcess()
+    public function postProcess(): void
     {
         $cartid = (int) Tools::getValue('cartid');
         if (!$cartid) {

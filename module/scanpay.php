@@ -33,7 +33,7 @@ class Scanpay extends PaymentModule
         $this->description = $this->l('Accept payments using the Scanpay payment gateway');
     }
 
-    public function install()
+    public function install(): bool
     {
         $DB = Db::getInstance();
         $DB->execute(
@@ -67,16 +67,16 @@ class Scanpay extends PaymentModule
             && $this->registerHook('actionOrderStatusPostUpdate');
     }
 
-    public function uninstall()
+    public function uninstall(): bool
     {
         return parent::uninstall();
     }
 
     /* Create array of payment options to be shown in checkout */
-    public function hookPaymentOptions($params)
+    public function hookPaymentOptions(array $params): array
     {
         if (!$this->active) {
-            return;
+            return [];
         }
 
         $payopts = [];
@@ -120,7 +120,7 @@ class Scanpay extends PaymentModule
     }
 
     /* Order status change hook */
-    public function hookActionOrderStatusPostUpdate($params)
+    public function hookActionOrderStatusPostUpdate(array $params): void
     {
         $states = Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS');
 
@@ -207,7 +207,7 @@ class Scanpay extends PaymentModule
     }
 
     /* Configuration handling (Settings) */
-    public function getContent()
+    public function getContent(): string
     {
         $captureOnStatus = Configuration::get('SCANPAY_CAPTURE_ON_ORDER_STATUS');
         $settings = [

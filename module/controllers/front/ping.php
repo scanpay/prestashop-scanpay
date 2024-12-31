@@ -16,7 +16,7 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
     private $tSeq = _DB_PREFIX_ . 'scanpay_seq';
     private $tCart = _DB_PREFIX_ . 'scanpay_carts';
 
-    public function __construct($res = [])
+    public function __construct(array $res = [])
     {
         parent::__construct($res);
         $this->DB = Db::getInstance();
@@ -99,7 +99,7 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         $payment->update();
     }
 
-    private function sync(int $shopid, int $seq)
+    private function sync(int $shopid, int $seq): void
     {
         $scanpay = new Scanpay();
         $client = new ScanpayClient(Configuration::get('SCANPAY_APIKEY'));
@@ -168,7 +168,7 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         }
     }
 
-    public function postProcess()
+    public function postProcess(): void
     {
         $signature = $_SERVER['HTTP_X_SIGNATURE'];
         if (!isset($signature)) {

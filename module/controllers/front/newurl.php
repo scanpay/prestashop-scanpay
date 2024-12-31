@@ -12,7 +12,7 @@ require_once dirname(__FILE__) . '/../../classes/libscanpay.php';
 
 class ScanpayNewurlModuleFrontController extends ModuleFrontController
 {
-    public function postProcess()
+    public function postProcess(): void
     {
         $scanpay = new Scanpay();
         $cart = $this->context->cart;
