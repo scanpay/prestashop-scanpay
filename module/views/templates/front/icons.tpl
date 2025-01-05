@@ -6,6 +6,6 @@
 
 <div class="scanpay-icons">
     {foreach from=$icons item=ico}
-        <img src="{$ico}" class="scanpay-ico">
+        <img src="{$ico|escape:'html':'UTF-8'}" class="scanpay-ico">
     {/foreach}
 </div>
