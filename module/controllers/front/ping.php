@@ -170,10 +170,10 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
 
     public function postProcess(): void
     {
-        $signature = $_SERVER['HTTP_X_SIGNATURE'];
-        if (!isset($signature)) {
+        if (!isset($_SERVER['HTTP_X_SIGNATURE'])) {
             exit;
         }
+        $signature = $_SERVER['HTTP_X_SIGNATURE'];
         $apikey = Configuration::get('SCANPAY_APIKEY') ?: '';
         $shopid = (int) explode(':', $apikey)[0];
         if (!$shopid) {
