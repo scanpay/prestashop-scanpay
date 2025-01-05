@@ -16,9 +16,9 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
     private $tSeq = _DB_PREFIX_ . 'scanpay_seq';
     private $tCart = _DB_PREFIX_ . 'scanpay_carts';
 
-    public function __construct(array $res = [])
+    public function __construct()
     {
-        parent::__construct($res);
+        parent::__construct();
         $this->DB = Db::getInstance();
         $this->ajax = true;
     }
