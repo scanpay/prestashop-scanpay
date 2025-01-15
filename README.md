@@ -12,7 +12,7 @@ If you have any questions, concerns or ideas, please do not hesitate to e-mail u
 ## Requirements
 
 - PrestaShop >= 8.0 ([details](./docs/requirements.md#prestashop-compatibility-table))
-- PHP version >= 7.0 ([details](./docs/requirements.md#php-compatibility-table))
+- PHP version >= 8.0 ([details](./docs/requirements.md#php-compatibility-table))
 - libcurl >= 7.25.0 ([details](./docs/requirements.md#libcurl-compatibility-table))
 
 ## Installation
