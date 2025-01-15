@@ -88,6 +88,10 @@ class Scanpay extends PaymentModule
             $payopts[] = (new PaymentOption())->setCallToActionText('MobilePay')
                 ->setAction($this->context->link->getModuleLink($this->name, 'newurl', ['paymentmethod' => 'mobilepay'], true));
         }
+        if (Configuration::get('SCANPAY_APPLEPAY')) {
+            $payopts[] = (new PaymentOption())->setCallToActionText('ApplePay')
+                ->setAction($this->context->link->getModuleLink($this->name, 'newurl', ['paymentmethod' => 'applepay'], true));
+        }
 
         return $payopts;
     }
@@ -217,6 +221,7 @@ class Scanpay extends PaymentModule
             'SCANPAY_AUTOCAPTURE' => Configuration::get('SCANPAY_AUTOCAPTURE'),
             'SCANPAY_CAPTURE_ON_ORDER_STATUS[]' => empty($captureOnStatus) ? [] : explode(',', $captureOnStatus),
             'SCANPAY_MOBILEPAY' => Configuration::get('SCANPAY_MOBILEPAY'),
+            'SCANPAY_APPLEPAY' => Configuration::get('SCANPAY_APPLEPAY'),
         ];
 
         // Update configuration if config is submitted (POST)
@@ -229,6 +234,7 @@ class Scanpay extends PaymentModule
                 'SCANPAY_AUTOCAPTURE' => (int) Tools::getValue('SCANPAY_AUTOCAPTURE'),
                 'SCANPAY_CAPTURE_ON_ORDER_STATUS[]' => empty($captureOnStatus) ? [] : $captureOnStatus,
                 'SCANPAY_MOBILEPAY' => (int) Tools::getValue('SCANPAY_MOBILEPAY'),
+                'SCANPAY_APPLEPAY' => (int) Tools::getValue('SCANPAY_APPLEPAY'),
             ];
             foreach ($settings as $key => $value) {
                 if (substr($key, -2) === '[]') {
@@ -368,6 +374,25 @@ class Scanpay extends PaymentModule
                     'label' => 'MobilePay',
                     'name' => 'SCANPAY_MOBILEPAY',
                     'desc' => $this->l('Enable MobilePay as a payment option in checkout. Make sure MobilePay is also activated in your Scanpay Dashboard.'),
+                    'is_bool' => true,
+                    'values' => [
+                        [
+                            'id' => 'on',
+                            'value' => 1,
+                            'name' => $this->l('Enabled'),
+                        ],
+                        [
+                            'id' => 'off',
+                            'value' => 0,
+                            'name' => $this->l('Disabled'),
+                        ],
+                    ],
+                ],
+                [
+                    'type' => 'switch',
+                    'label' => 'ApplePay',
+                    'name' => 'SCANPAY_APPLEPAY',
+                    'desc' => $this->l('Enable ApplePay as a payment option in checkout. Make sure ApplePay is also activated in your Scanpay Dashboard.'),
                     'is_bool' => true,
                     'values' => [
                         [
