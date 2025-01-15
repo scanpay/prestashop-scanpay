@@ -274,6 +274,7 @@ class Scanpay extends PaymentModule
         $this->context->controller->addJS($this->local_path . 'views/js/settings.js');
 
         $captureOnOrderStatusContent = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/captureonorderstatus.tpl');
+        $captureOnOrderStatusList = [];
         foreach (OrderState::getOrderStates($this->context->language->id) as $status) {
             $captureOnOrderStatusList[] = ['status' => $status['id_order_state'], 'name' => $status['name']];
         }
