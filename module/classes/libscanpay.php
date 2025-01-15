@@ -65,9 +65,9 @@ class ScanpayClient
         $code = (int) curl_getinfo($this->ch, CURLINFO_RESPONSE_CODE);
         if ($code !== 200) {
             if (substr_count($res, "\n") !== 1 || strlen($res) > 512) {
-                $result = 'server error';
+                $res = 'server error';
             }
-            throw new \Exception($code . ' ' . $result);
+            throw new \Exception($code . ' ' . $res);
         }
 
         $json = json_decode($res, true);
