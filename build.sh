@@ -6,6 +6,7 @@ shopt -s nullglob
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$DIR/module"
 TMP="/tmp/prestashop/scanpay"
+rm -rf "$TMP"
 
 # Get the verison number from package.json
 VERSION=$(node -p "require('$DIR/package.json').version")
