@@ -99,22 +99,18 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
         $payment->update();
     }
 
-    private function sync(int $shopid, int $seq): void
+    private function sync(int $shopid, int $seq, int $pingSeq): void
     {
         $scanpay = new Scanpay();
         $client = new ScanpayClient(Configuration::get('SCANPAY_APIKEY'));
 
-        while (1) {
+        while ($pingSeq > $seq) {
             $res = $client->seq($seq);
             if (!$res['changes'] || $res['seq'] <= $seq) {
                 return;
             }
             foreach ($res['changes'] as $c) {
-                if (isset($c['error'])) {
-                    PrestaShopLogger::addLog("Synchronization error: transaction [id={$c['id']}] skipped due to error: {$c['error']}", 3);
-                    continue;
-                }
-                if ($c['type'] !== 'transaction') {
+                if (isset($c['error']) || $c['type'] !== 'transaction') {
                     continue;
                 }
 
@@ -193,17 +189,15 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
                 throw new Exception('failed to load seq');
             }
             $seq = (int) $row['seq'];
-            if ($ping['seq'] < $seq) {
-                throw new Exception('ping seq is less than db seq');
-            } elseif ($ping['seq'] == $seq) {
+            if ($ping['seq'] == $seq) {
                 // No new events. Update mtime and return success
                 $sql = "UPDATE $this->tSeq SET mtime = " . time() . " WHERE shopid = $shopid";
                 if (!$this->DB->execute($sql, false)) {
                     throw new Exception('failed to update mtime');
                 }
-                exit(json_encode(['success' => true]));
+            } else {
+                $this->sync($shopid, $seq, $ping['seq']);
             }
-            $this->sync($shopid, $seq);
         } catch (Exception $e) {
             PrestaShopLogger::addLog('Encountered error while updating: ' . $e, 3);
             exit(json_encode(['error' => 'failed to update orders']));
