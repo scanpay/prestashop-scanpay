@@ -172,6 +172,9 @@ class Scanpay extends PaymentModule
 
     private function fmtDeltaTime(int $dt): string
     {
+        if ($dt === null) {
+            return 'never pinged';
+        }
         if ($dt <= 1) {
             return '1 second ago';
         } elseif ($dt < 120) {
