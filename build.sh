@@ -1,55 +1,53 @@
 #!/bin/bash
-
-set -e
+set -euo pipefail
 shopt -s nullglob
 
+for cmd in node rsync zip sed grep stat touch; do
+    command -v $cmd >/dev/null || { echo "Missing required tool: $cmd" >&2; exit 1; }
+done
+
+# Paths
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$DIR/module"
 TMP="/tmp/prestashop/scanpay"
+ZIP_PROD="$DIR/prestashop-scanpay"
+ZIP_TEST="$DIR/test"
+
+# Version
+VERSION="$(node -p "require('$DIR/package.json').version")"
+echo -e "Building version: \033[0;31m$VERSION\033[0m"
+
+# Prepare build dir
 rm -rf "$TMP"
+mkdir -p "$TMP"
 
-# Get the verison number from package.json
-VERSION=$(node -p "require('$DIR/package.json').version")
-echo -e "Building version: \033[0;31m$VERSION\033[0m\n"
+# Copy static files
+rsync -am --quiet "$SRC/" "$TMP/"
 
-if [ -d "$TMP" ]; then
-    rm -rf "${TMP:?}/"*
-    echo "Contents of $TMP have been removed."
-else
-    mkdir -p "$TMP"
-fi
-
-# Copy static files to the build directory
-rsync -am "$SRC/" "$TMP/"
-
-# Convert SASS to CSS
-#"$DIR/node_modules/.bin/sass" --style compressed --no-source-map --verbose "$SRC/public/css/":"$BUILD/public/css/"
-
-# Compile TypeScript to JavaScript (+minify)
-#for file in "$SRC/public/js/"*.ts; do
-#    echo "Compiling $file"
-#    "$DIR/node_modules/.bin/esbuild" --bundle --minify "$file" --outfile="$BUILD/public/js/$(basename "$file" .ts).js"
-#done
-
-# Insert the version number into the files
-for file in $(find "$TMP" -type f \( -name "*.php" -o -name "*.js" \)); do
+# Replace version placeholders
+find "$TMP" -type f \( -name "*.php" -o -name "*.js" \) -print0 |
+while IFS= read -r -d '' file; do
     if grep -q "{{ VERSION }}" "$file"; then
         sed -i "s/{{ VERSION }}/$VERSION/g" "$file"
     fi
 done
 
-# Create a zip file
-cd "$TMP"
-cd ..
-zip -r "$DIR/prestashop-scanpay-$VERSION.zip" scanpay
+# Production zip
+cd "$(dirname "$TMP")"
+zip -qr "$ZIP_PROD-$VERSION.zip" "$(basename "$TMP")"
+echo "Production zip created at $ZIP_PROD-$VERSION.zip"
 
-# Create a zip file for the test environment
-for file in $(find "$TMP" -type f -name "*.php"); do
+# Test build: replace domains, preserve mtimes
+find "$TMP" -type f -name "*.php" -print0 |
+while IFS= read -r -d '' file; do
     mtime=$(stat -c %y "$file")
-    sed -i 's/dashboard\.scanpay\.dk/dashboard\.scanpay\.dev/' "$file"
-    sed -i 's/api\.scanpay\.dk/api\.scanpay\.dev/g' "$file"
+    sed -i 's/dashboard\.scanpay\.dk/dashboard.scanpay.dev/g' "$file"
+    sed -i 's/api\.scanpay\.dk/api.scanpay.dev/g' "$file"
     touch -d "$mtime" "$file"
 done
 
-zip -r "$DIR/test-$VERSION.zip" scanpay
+zip -qr "$ZIP_TEST-$VERSION.zip" "$(basename "$TMP")"
+echo "Test zip created at $ZIP_TEST-$VERSION.zip"
+
+# Cleanup
 rm -rf "$TMP"
