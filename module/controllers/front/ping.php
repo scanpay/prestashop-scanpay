@@ -199,7 +199,7 @@ class ScanpayPingModuleFrontController extends ModuleFrontController
                 $this->sync($shopid, $seq, $ping['seq']);
             }
         } catch (Exception $e) {
-            PrestaShopLogger::addLog('Encountered error while updating: ' . $e, 3);
+            PrestaShopLogger::addLog('Encountered error while updating: ' . $e->getMessage(), 3);
             exit(json_encode(['error' => 'failed to update orders']));
         }
         exit(json_encode(['success' => true]));
