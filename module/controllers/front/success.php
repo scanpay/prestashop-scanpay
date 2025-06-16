@@ -38,13 +38,17 @@ class ScanpaySuccessModuleFrontController extends ModuleFrontController
                 break;
             }
         }
-
+        $oid = ($row !== false) ? (int) $row['orderid'] : (int) Order::getIdByCartId($cartid);
+        if (!$oid) {
+            PrestaShopLogger::addLog("Scanpay success.php: could not resolve orderid for cartid=$cartid");
+            exit('order not found');
+        }
         $scanpay = new Scanpay();
         $data = [
             'controller' => 'order-confirmation',
-            'id_cart' => (int) $cartid,
+            'id_cart' => $cartid,
             'id_module' => $scanpay->id,
-            'id_order' => (int) $row['orderid'],
+            'id_order' => $oid,
             'key' => $key,
         ];
         Tools::redirect(__PS_BASE_URI__ . 'index.php?' . http_build_query($data));
