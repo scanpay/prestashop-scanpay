@@ -80,20 +80,38 @@ class Scanpay extends PaymentModule
         }
 
         $payopts = [];
-        $title = Configuration::get('SCANPAY_TITLE');
-        $payopts[] = (new PaymentOption())->setCallToActionText($title)
-            ->setAction($this->context->link->getModuleLink($this->name, 'newurl', [], true));
-
+        $payopts[] = $this->createPaymentOption(
+            Configuration::get('SCANPAY_TITLE'),
+            [],
+            'Ved betaling med betalingskort reserveres beløbet med det samme på dit kort, men det trækkes først, når ordren er gennemført.'
+        );
         if (Configuration::get('SCANPAY_MOBILEPAY')) {
-            $payopts[] = (new PaymentOption())->setCallToActionText('MobilePay')
-                ->setAction($this->context->link->getModuleLink($this->name, 'newurl', ['paymentmethod' => 'mobilepay'], true));
+            $payopts[] = $this->createPaymentOption(
+                'MobilePay',
+                ['paymentmethod' => 'mobilepay'],
+                'Ved betaling med MobilePay reserveres beløbet med det samme på det tilknyttede kort, men det trækkes først, når ordren er gennemført.'
+            );
         }
         if (Configuration::get('SCANPAY_APPLEPAY')) {
-            $payopts[] = (new PaymentOption())->setCallToActionText('ApplePay')
-                ->setAction($this->context->link->getModuleLink($this->name, 'newurl', ['paymentmethod' => 'applepay'], true));
+            $payopts[] = $this->createPaymentOption(
+                'ApplePay',
+                ['paymentmethod' => 'applepay'],
+                'Ved betaling med Apple Pay reserveres beløbet med det samme på det tilknyttede kort, men det trækkes først, når ordren er gennemført.'
+            );
         }
-
         return $payopts;
+    }
+
+    private function createPaymentOption(string $title, array $params, string $legal): PaymentOption
+    {
+        $this->context->smarty->assign([
+            'legal' => $legal,
+        ]);
+        $html = $this->context->smarty->fetch('module:scanpay/views/templates/hook/payment_info.tpl');
+        return (new PaymentOption())
+            ->setCallToActionText($title)
+            ->setAction($this->context->link->getModuleLink($this->name, 'newurl', $params, true))
+            ->setAdditionalInformation($html);
     }
 
     /**
